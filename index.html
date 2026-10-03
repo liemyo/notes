@@ -190,7 +190,7 @@ dialog.ed.col{background:color-mix(in srgb,var(--nc) var(--na),var(--card))}
 <dialog id="dlg"></dialog>
 <noscript>Notes memerlukan JavaScript.</noscript>
 <script>// Notes — catatan dengan favorit, kategori, tag, checklist, arsip & sampah. Akun (nama pengguna + PIN) sama dengan Planner; data di Supabase (proyek saku-yuk), sinkron real time.
-const BUILD = '20261003-190057';
+const BUILD = '20261003-191727';
 const SB_URL = 'https://bbptcxpzzvgpxqylkrmw.supabase.co', SB_KEY = 'sb_publishable_Ny-WHCEZ3WmcLFsPBx9QeQ_9xgo7MxR'; // public key; tables closed, only nt_*/pl_* functions
 const ADMIN = 'admin';
 
@@ -294,8 +294,14 @@ async function syncNow() {
     if (!S.admin && S.queue.size) {
       const keys = [...S.queue], sent = keys.map(k => S.items.get(k)).filter(Boolean);
       const snap = new Map(sent.map(i => [key(i), i.updated]));
-      for (let i = 0; i < sent.length; i += 100)
-        { const r = await rpc('nt_put', { p_owner: S.user, p_pin: S.pin || null, p_items: sent.slice(i, i + 100).map(({ id, kind, data, updated, deleted }) => ({ id, kind, data, updated, deleted })) });
+      const batches = [[]]; let size = 0; // split by size: one note can be several MB
+      for (const { id, kind, data, updated, deleted } of sent) {
+        const it = { id, kind, data, updated, deleted }, n = JSON.stringify(it).length;
+        if (batches.at(-1).length && (size + n > 4e6 || batches.at(-1).length >= 100)) { batches.push([]); size = 0; }
+        batches.at(-1).push(it); size += n;
+      }
+      for (const b of batches)
+        { const r = await rpc('nt_put', { p_owner: S.user, p_pin: S.pin || null, p_items: b });
           if (!r?.ok) { needPin(r?.pin); return; } }
       for (const k of keys) if (S.items.get(k)?.updated === snap.get(k)) S.queue.delete(k);
       saveCache(); ping();
@@ -547,21 +553,21 @@ function drawEditor() {
         <button type="button" class="ib ${d.archived ? 'on' : ''}" data-a="earch" title="${d.archived ? 'Keluarkan dari arsip' : 'Arsipkan'}">🗄</button>
         <button type="button" class="ib" data-a="etrash" title="Pindahkan ke sampah">🗑</button>`}</div>
     <input id="e-title" class="e-title" placeholder="Judul" maxlength="200" value="${esc(d.title)}"${dis}>
-    ${d.type === 'list' ? `<div class="cl-ed" id="cl-ed">${clRows(ro)}</div>` : `<textarea id="e-body" class="e-body" placeholder="Tulis catatan… (pakai #tag untuk menandai)" maxlength="100000"${dis}>${esc(d.body)}</textarea>`}
+    ${d.type === 'list' ? `<div class="cl-ed" id="cl-ed">${clRows(ro)}</div>` : `<textarea id="e-body" class="e-body" placeholder="Tulis catatan… (pakai #tag untuk menandai)"${dis}>${esc(d.body)}</textarea>`}
     <div class="ed-opts">
       <select id="e-cat" title="Kategori"${dis}><option value="">◻️ Tanpa kategori</option>${cs.map(c => `<option value="${esc(c.id)}"${d.cat === c.id ? ' selected' : ''}>${esc(catLabel(c))}</option>`).join('')}${ro ? '' : '<option value="__new">＋ Kategori baru…</option>'}</select>
       <div class="swatch" role="radiogroup" aria-label="Warna">${Object.entries(COLORS).map(([k, [l, c]]) => `<label title="${l}"><input type="radio" name="e-color" value="${k}"${col === k ? ' checked' : ''}${dis}><span style="background:${k ? c : 'var(--card)'}">${k ? '' : '⃠'}</span></label>`).join('')}</div>
       ${ro ? '' : `<button type="button" class="btn sm" data-a="etype">${d.type === 'list' ? '¶ Jadikan teks' : '☑ Jadikan checklist'}</button>`}
     </div>
     <div class="ed-foot"><span class="muted small" id="e-info">${n ? 'Diubah ' + fullDT(n.updated) + ' · ' : ''}${words} kata${n ? ' · dibuat ' + fullDT(d.created || n.updated) : ''}</span><span class="sp"></span>
-      <button type="button" class="btn sm" data-a="copy">⧉ Salin</button>${navigator.share ? '<button type="button" class="btn sm" data-a="share">↗ Bagikan</button>' : ''}<button type="button" class="btn sm" data-a="dltxt">⬇ .txt</button></div>
+      <button type="button" class="btn sm" data-a="copy">⧉ Salin</button>${navigator.share ? '<button type="button" class="btn sm" data-a="share">↗ Bagikan</button>' : ''}<button type="button" class="btn sm" data-a="pdf">📄 PDF</button><button type="button" class="btn sm" data-a="dltxt">⬇ .txt</button></div>
   </div>`;
 }
 function clRows(ro) {
   const items = S.edit.d.items || [];
-  const row = (i, ix) => `<div class="cl-row ${i.d ? 'dn' : ''}"><input type="checkbox" data-ci="${ix}"${i.d ? ' checked' : ''}${ro ? ' disabled' : ''}><input type="text" class="cl-in" data-ct="${ix}" value="${esc(i.t)}" maxlength="500"${ro ? ' disabled' : ''}>${ro ? '' : `<button type="button" class="x" data-a="cdel" data-v="${ix}" aria-label="Hapus">×</button>`}</div>`;
+  const row = (i, ix) => `<div class="cl-row ${i.d ? 'dn' : ''}"><input type="checkbox" data-ci="${ix}"${i.d ? ' checked' : ''}${ro ? ' disabled' : ''}><input type="text" class="cl-in" data-ct="${ix}" value="${esc(i.t)}"${ro ? ' disabled' : ''}>${ro ? '' : `<button type="button" class="x" data-a="cdel" data-v="${ix}" aria-label="Hapus">×</button>`}</div>`;
   const open = items.map((i, ix) => [i, ix]).filter(([i]) => !i.d), done = items.map((i, ix) => [i, ix]).filter(([i]) => i.d);
-  return open.map(([i, ix]) => row(i, ix)).join('') + (ro ? '' : '<div class="cl-row add"><span>＋</span><input type="text" id="cl-new" placeholder="Tambah item… (Enter)" maxlength="500"></div>')
+  return open.map(([i, ix]) => row(i, ix)).join('') + (ro ? '' : '<div class="cl-row add"><span>＋</span><input type="text" id="cl-new" placeholder="Tambah item… (Enter)"></div>')
     + (done.length ? `<div class="muted small cl-done">☑ ${done.length} selesai</div>` + done.map(([i, ix]) => row(i, ix)).join('') : '');
 }
 let saveT = null;
@@ -632,7 +638,26 @@ function toast(msg, undo) {
 function applyTheme() { const t = LS.get('theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; }
 function moveNote(k, patch, msg) { const n = S.items.get(k); if (!n || RO()) return; const before = { ...n.data }; setData(k, patch); toast(msg, () => setData(k, before)); }
 function download(name, text, type) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
-const fileName = d => (d.title || 'catatan').replace(/[^\p{L}\p{N} _-]+/gu, '').trim().slice(0, 50) || 'catatan';
+async function exportPdf(d, n) { // real PDF file (jsPDF), long notes flow over as many pages as needed
+  if (!window.jspdf) await new Promise((res, rej) => { const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'; s.onload = res; s.onerror = () => rej(new Error('jsPDF tidak bisa dimuat')); document.head.appendChild(s); });
+  const clean = t => String(t ?? '').replace(/[—–]/g, '-').replace(/[“”]/g, '"').replace(/[‘’]/g, "'").replace(/…/g, '...').replace(/[•·]/g, '-').replace(/\t/g, '    ').replace(/[^\n\x20-\xff]/gu, '');
+  const doc = new window.jspdf.jsPDF({ unit: 'pt', format: 'a4' }), W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight(), M = 50, TW = W - 2 * M;
+  let y = M;
+  const line = (txt, size, lh, style = 'normal', color = 20) => {
+    doc.setFont('helvetica', style); doc.setFontSize(size); doc.setTextColor(color);
+    for (const l of doc.splitTextToSize(txt, TW)) { if (y + lh > H - M) { doc.addPage(); y = M; } doc.text(l, M, y + size); y += lh; }
+  };
+  line(clean(d.title || 'Catatan'), 18, 24, 'bold');
+  const c = n ? catOf(n) : cats().find(x => x.id === d.cat);
+  line(clean([c?.name, 'Dibuat ' + fullDT(d.created || Date.now()), n ? 'Diubah ' + fullDT(n.updated) : ''].filter(Boolean).join('  |  ')), 9, 14, 'normal', 120);
+  y += 10; doc.setDrawColor(210); doc.line(M, y, W - M, y); y += 14;
+  if (d.type === 'list') for (const i of d.items || []) line((i.d ? '[x] ' : '[  ] ') + clean(i.t), 11, 16, 'normal', i.d ? 130 : 20);
+  else for (const p of clean(d.body).split('\n')) line(p || ' ', 11, 16);
+  const pages = doc.getNumberOfPages();
+  for (let i = 1; i <= pages; i++) { doc.setPage(i); doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(150); doc.text(`Notes - liemyo.github.io/notes`, M, H - 25); doc.text(`Hal ${i}/${pages}`, W - M, H - 25, { align: 'right' }); }
+  doc.save(fileName(d) + '.pdf');
+}
+const fileName = d => (d.title || 'catatan').replace(/[^\p{L}\p{N} _-]+/gu, '').replace(/\s+/g, ' ').trim().slice(0, 50) || 'catatan';
 
 // ---------- events ----------
 const A = {
@@ -662,6 +687,7 @@ const A = {
   cdel: el => { S.edit.d.items.splice(Number(el.dataset.v), 1); editChanged(true); },
   copy: async () => { try { await navigator.clipboard.writeText(noteText(S.edit.d)); toast('Disalin ke clipboard ⧉'); } catch { toast('Tidak bisa menyalin.'); } },
   share: async () => { try { await navigator.share({ title: S.edit.d.title || 'Catatan', text: noteText(S.edit.d) }); } catch {} },
+  pdf: async el => { el.disabled = true; el.textContent = '⏳ PDF…'; try { await exportPdf(S.edit.d, S.edit.k ? S.items.get(S.edit.k) : null); toast('PDF diunduh 📄'); } catch (e) { toast('Gagal membuat PDF: ' + e.message); } el.disabled = false; el.textContent = '📄 PDF'; },
   dltxt: () => download(fileName(S.edit.d) + '.txt', noteText(S.edit.d), 'text/plain;charset=utf-8'),
   undo: () => { const u = S.undo; S.undo = null; const t = $('.toast'); if (t) t.hidden = true; if (u) u(); },
   cats: () => openCats(),
