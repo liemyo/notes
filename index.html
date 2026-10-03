@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>/* phones + small tablets: whole app at 80% (layout widens to fill the screen); max-scale stops iOS zooming into inputs */
+if (Math.min(screen.width, screen.height) <= 820) document.querySelector('meta[name=viewport]').content = 'width=device-width, initial-scale=0.8, minimum-scale=0.8, maximum-scale=0.8, viewport-fit=cover';</script>
 <title>Notes</title>
 <meta name="description" content="Notes: catatan sederhana dengan favorit, kategori, tag, checklist, arsip dan sampah — sinkron real time di HP dan laptop.">
 <meta name="theme-color" content="#d98a00">
@@ -101,6 +103,39 @@ dialog.ed.col{background:color-mix(in srgb,var(--nc) var(--na),var(--card))}
 .ed-bar .sp,.ed-foot .sp{flex:1}
 .e-title{border:0;background:none;font-size:22px;font-weight:700;padding:6px 0;outline:0!important}
 .e-body{border:0;background:none;flex:1;min-height:300px;resize:none;padding:4px 0;font-size:16px;line-height:1.6;outline:0!important;width:100%}
+.e-body.rt{flex:1 1 0;min-height:160px;overflow:auto;padding:4px 2px;overflow-wrap:anywhere;cursor:text}
+.e-body.rt[contenteditable=false]{cursor:default}
+.e-body.rt:empty::before{content:attr(data-ph);color:var(--muted);pointer-events:none}
+.rt table{border-collapse:collapse;margin:6px 0;max-width:100%}
+.rt td,.rt th{border:1px solid color-mix(in srgb,var(--text) 22%,transparent);padding:4px 8px;min-width:48px;vertical-align:top;text-align:left}
+.rt th{background:color-mix(in srgb,var(--text) 7%,transparent);font-weight:700}
+.rt ul,.rt ol{margin:4px 0;padding-left:24px}
+.rt p{margin:0}
+.rt img{max-width:160px;max-height:120px;width:auto;height:auto;border-radius:8px;vertical-align:middle;cursor:zoom-in;margin:2px;border:1px solid color-mix(in srgb,var(--text) 15%,transparent)}
+.rt a{color:var(--acc)}
+.nb.rt{white-space:normal}
+.nb.rt img{max-width:90px;max-height:70px}
+.nb.rt table{font-size:12px}
+.rt-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid color-mix(in srgb,var(--text) 10%,transparent)}
+.rt-bar select{padding:4px 6px;font-size:13px;background:color-mix(in srgb,var(--card) 70%,transparent);max-width:9.5em}
+.rt-g{display:inline-flex;gap:2px;border:1px solid var(--line);border-radius:10px;padding:1px}
+.rb{border:0;background:none;color:var(--text);cursor:pointer;min-width:30px;height:28px;border-radius:8px;display:inline-grid;place-items:center;font-size:14px;padding:0 6px;position:relative}
+.rb:hover{background:color-mix(in srgb,var(--text) 9%,transparent)}
+.rt-bar>.rb{border:1px solid var(--line);border-radius:10px}
+.rc input{position:absolute;left:4px;right:4px;bottom:1px;width:auto;height:5px;padding:0;border:0;border-radius:2px;opacity:1;cursor:pointer;-webkit-appearance:none;appearance:none}
+.rc input::-webkit-color-swatch-wrapper{padding:0}.rc input::-webkit-color-swatch{border:0;border-radius:2px}
+.rc span{margin-top:-4px;font-weight:700}
+.ed-find{display:flex;align-items:center;gap:4px;padding:4px 6px;border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--card) 80%,transparent)}
+.ed-find input{flex:1;border:0;background:none;padding:6px 4px;outline:0!important}
+.ed-find #f-n{min-width:4.5em;text-align:right;white-space:nowrap}
+::highlight(fnd){background-color:color-mix(in srgb,var(--star) 45%,transparent);color:inherit}
+::highlight(fnd-cur){background-color:var(--acc);color:var(--acc-ink)}
+.cl-row.hit{background:color-mix(in srgb,var(--star) 22%,transparent);border-radius:6px}
+.cl-row.cur{outline:2px solid var(--acc)}
+#zoom{background:transparent;box-shadow:none;width:fit-content;height:fit-content;margin:auto;max-width:96vw;max-height:96dvh;padding:0;overflow:visible;cursor:zoom-out}
+#zoom::backdrop{background:rgba(0,0,0,.85)}
+#zoom img{display:block;max-width:96vw;max-height:92dvh;border-radius:8px}
+#zoom .zx{position:fixed;top:14px;right:16px;width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.15);color:#fff;font-size:26px;cursor:pointer}
 .e-title:disabled,.e-body:disabled{color:var(--text);-webkit-text-fill-color:var(--text);opacity:1}
 .cl-ed{flex:1;min-height:200px;overflow:auto;display:flex;flex-direction:column;gap:2px}
 .cl-row{display:flex;align-items:center;gap:8px}
@@ -216,7 +251,7 @@ dialog.ed.col{background:color-mix(in srgb,var(--nc) var(--na),var(--card))}
 <dialog id="dlg"></dialog>
 <noscript>Notes memerlukan JavaScript.</noscript>
 <script>// Notes — catatan dengan favorit, kategori, tag, checklist, arsip & sampah. Akun (nama pengguna + PIN) sama dengan Planner; data di Supabase (proyek saku-yuk), sinkron real time.
-const BUILD = '20261003-192344';
+const BUILD = '20261003-212426';
 const SB_URL = 'https://bbptcxpzzvgpxqylkrmw.supabase.co', SB_KEY = 'sb_publishable_Ny-WHCEZ3WmcLFsPBx9QeQ_9xgo7MxR'; // public key; tables closed, only nt_*/pl_* functions
 const ADMIN = 'admin';
 
@@ -499,7 +534,8 @@ function preview(n) {
     return `<div class="cl">${show.map(i => { const ix = items.indexOf(i); return `<div class="cli ${i.d ? 'dn' : ''}">${RO() || d.trashed ? `<span class="cb">${i.d ? '☑' : '☐'}</span>` : `<button type="button" class="cb" data-a="ctog" data-k="${key(n)}" data-v="${ix}" aria-label="Centang">${i.d ? '☑' : '☐'}</button>`}<span>${esc(i.t)}</span></div>`; }).join('')}
       ${items.length > show.length ? `<div class="muted small">+${items.length - show.length} lainnya</div>` : ''}${items.length ? `<div class="muted small">☑ ${done.length}/${items.length} selesai</div>` : ''}</div>`;
   }
-  const b = (d.body || '').trim(); if (!b) return '';
+  const b = (d.body || '').trim(); if (!b && !/<img/.test(d.html || '')) return '';
+  if (d.html && d.html.replace(/src="data:[^"]*"/g, '').length < 40000) return `<div class="nb rt">${cleanHtml(d.html)}</div>`;
   const cut = b.length > 420 ? b.slice(0, 420) + '…' : b;
   return `<div class="nb">${esc(cut).replace(/(^|\s)(#[\p{L}\p{N}_-]{2,30})/gu, '$1<span class="ht">$2</span>').replace(/https?:\/\/[^\s<]+/g, u => `<a href="${u}" target="_blank" rel="noopener">${u.length > 40 ? u.slice(0, 40) + '…' : u}</a>`)}</div>`;
 }
@@ -573,19 +609,22 @@ function openEditor(n, init) {
   if (!n) (d.type === 'list' ? $('.cl-in') || $('#e-title') : $('#e-body'))?.focus();
 }
 function drawEditor() {
+  syncRt();
   const E = S.edit, d = E.d, ro = RO() || !!d.trashed, dis = ro ? ' disabled' : '';
   const n = E.k ? S.items.get(E.k) : null, cs = n ? cats(n.owner) : cats(), col = COLORS[d.color] ? d.color : '';
   const words = ((d.title || '') + ' ' + (d.type === 'list' ? (d.items || []).map(i => i.t).join(' ') : d.body || '')).trim().split(/\s+/).filter(Boolean).length;
   dlg().className = 'ed ' + (col ? 'col' : ''); dlg().style.setProperty('--nc', COLORS[col][1]);
   dlg().innerHTML = `<div class="dlg ed-in">
     <div class="ed-bar"><button type="button" class="ib" data-a="close" title="Tutup (Esc)">←</button><span class="sp"></span>
+      <button type="button" class="ib ${E.f ? 'on' : ''}" data-a="find" title="Cari teks di catatan (⌘F / Ctrl+F)">🔍</button>
       ${ro ? (d.trashed && !RO() ? '<button type="button" class="btn sm" data-a="restore">↩ Pulihkan</button><button type="button" class="btn danger sm" data-a="purge">Hapus permanen</button>' : `<span class="muted small">${RO() ? '👤 ' + esc(n?.owner || '') + ' · hanya lihat' : 'Di sampah'}</span>`)
       : `<button type="button" class="ib ${d.fav ? 'on' : ''}" data-a="efav" title="Favorit">${d.fav ? '★' : '☆'}</button>
         <button type="button" class="ib ${d.pinned ? 'on' : ''}" data-a="epin" title="${d.pinned ? 'Lepas sematan' : 'Sematkan di atas'}">📌</button>
         <button type="button" class="ib ${d.archived ? 'on' : ''}" data-a="earch" title="${d.archived ? 'Keluarkan dari arsip' : 'Arsipkan'}">🗄</button>
         <button type="button" class="ib" data-a="etrash" title="Pindahkan ke sampah">🗑</button>`}</div>
+    ${E.f ? findBar() : ''}
     <input id="e-title" class="e-title" placeholder="Judul" maxlength="200" value="${esc(d.title)}"${dis}>
-    ${d.type === 'list' ? `<div class="cl-ed" id="cl-ed">${clRows(ro)}</div>` : `<textarea id="e-body" class="e-body" placeholder="Tulis catatan… (pakai #tag untuk menandai)"${dis}>${esc(d.body)}</textarea>`}
+    ${d.type === 'list' ? `<div class="cl-ed" id="cl-ed">${clRows(ro)}</div>` : (ro ? '' : rtBar()) + `<div id="e-body" class="e-body rt" contenteditable="${ro ? 'false' : 'true'}" role="textbox" aria-multiline="true" data-ph="Tulis catatan… (pakai #tag untuk menandai)">${d.html ? cleanHtml(d.html) : plainToHtml(d.body)}</div>`}
     <div class="ed-opts">
       <select id="e-cat" title="Kategori"${dis}><option value="">◻️ Tanpa kategori</option>${cs.map(c => `<option value="${esc(c.id)}"${d.cat === c.id ? ' selected' : ''}>${esc(catLabel(c))}</option>`).join('')}${ro ? '' : '<option value="__new">＋ Kategori baru…</option>'}</select>
       <div class="swatch" role="radiogroup" aria-label="Warna">${Object.entries(COLORS).map(([k, [l, c]]) => `<label title="${l}"><input type="radio" name="e-color" value="${k}"${col === k ? ' checked' : ''}${dis}><span style="background:${k ? c : 'var(--card)'}">${k ? '' : '⃠'}</span></label>`).join('')}</div>
@@ -594,7 +633,157 @@ function drawEditor() {
     <div class="ed-foot"><span class="muted small" id="e-info">${n ? 'Diubah ' + fullDT(n.updated) + ' · ' : ''}${words} kata${n ? ' · dibuat ' + fullDT(d.created || n.updated) : ''}</span><span class="sp"></span>
       <button type="button" class="btn sm" data-a="copy">⧉ Salin</button>${navigator.share ? '<button type="button" class="btn sm" data-a="share">↗ Bagikan</button>' : ''}<button type="button" class="btn sm" data-a="pdf">📄 PDF</button><button type="button" class="btn sm" data-a="dltxt">⬇ .txt</button></div>
   </div>`;
+  if (E.f) runFind(0);
 }
+// ---------- rich text (fonts, sizes, colors, tables) ----------
+const RT_TAGS = new Set('B STRONG I EM U S STRIKE DEL SUB SUP SPAN FONT DIV P BR UL OL LI TABLE THEAD TBODY TFOOT TR TD TH COL COLGROUP H1 H2 H3 H4 BLOCKQUOTE PRE CODE HR A IMG'.split(' '));
+const RT_DROP = /^(SCRIPT|STYLE|IFRAME|FRAME|OBJECT|EMBED|TEMPLATE|META|LINK|TITLE|SVG|MATH|NOSCRIPT|VIDEO|AUDIO|CANVAS|FORM|INPUT|BUTTON|SELECT|TEXTAREA)$/;
+const RT_CSS = /^(color|background-color|font-family|font-size|font-weight|font-style|text-decoration-line|text-decoration|text-align|vertical-align|width)$/;
+const rtCache = new Map();
+function cleanHtml(html) { // whitelist sanitizer: notes of other users are shown to admin, imports can contain anything
+  if (rtCache.has(html)) return rtCache.get(html);
+  const t = document.createElement('template'); t.innerHTML = html;
+  const walk = el => { for (const c of [...el.children]) {
+    if (!RT_TAGS.has(c.tagName)) { if (RT_DROP.test(c.tagName)) c.remove(); else { walk(c); c.replaceWith(...c.childNodes); } continue; }
+    if (c.tagName === 'IMG') { const src = c.getAttribute('src') || ''; [...c.attributes].forEach(a => c.removeAttribute(a.name)); if (/^data:image\/(png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(src)) c.setAttribute('src', src); else c.remove(); continue; }
+    const href = c.tagName === 'A' && /^https?:\/\//i.test(c.getAttribute('href') || '') ? c.getAttribute('href') : null;
+    const css = []; for (const k of [...c.style]) { const v = c.style.getPropertyValue(k); if (RT_CSS.test(k) && !/url\(|expression|javascript/i.test(v)) css.push(k + ':' + v); }
+    for (const a of [...c.attributes]) { const n = a.name; if ((n === 'colspan' || n === 'rowspan') && /^\d{1,2}$/.test(a.value)) continue; if (c.tagName === 'FONT' && /^(color|face|size)$/.test(n) && !/[<>"]/.test(a.value)) continue; c.removeAttribute(n); }
+    if (css.length) c.setAttribute('style', css.join(';'));
+    if (href) { c.setAttribute('href', href); c.setAttribute('target', '_blank'); c.setAttribute('rel', 'noopener'); }
+    walk(c);
+  } };
+  walk(t.content); const out = t.innerHTML;
+  if (rtCache.size > 300) rtCache.clear(); rtCache.set(html, out); return out;
+}
+const plainToHtml = t => esc(t || '').replace(/ {2}/g, ' &nbsp;').replace(/\n/g, '<br>');
+function syncRt() { // editor DOM → note data (html for display, plain body for search/#tags/PDF/.txt)
+  const E = S.edit, el = $('#e-body'); if (!E || !E.rtDirty || !el) return; E.rtDirty = false;
+  const body = el.innerText.replace(/ /g, ' ').replace(/\n+$/, '');
+  E.d.body = body; E.d.html = body.trim() || el.querySelector('table,hr,img') ? el.innerHTML : '';
+}
+function rtChanged() { if (!S.edit) return; S.edit.rtDirty = true; editChanged(); findSoon(); }
+const RT_FONTS = [['', 'Font'], ['-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif', 'Sans'], ['Georgia,Times New Roman,serif', 'Serif'], ['Menlo,Consolas,monospace', 'Mono'], ['Arial,Helvetica,sans-serif', 'Arial'], ['Times New Roman,Times,serif', 'Times'], ['Verdana,sans-serif', 'Verdana'], ['Trebuchet MS,sans-serif', 'Trebuchet'], ['Comic Sans MS,Chalkboard SE,cursive', 'Comic']];
+const RT_SIZES = [12, 14, 16, 18, 20, 24, 28, 32, 40];
+function rtBar() {
+  const b = (a, l, t, v = '') => `<button type="button" class="rb" data-a="${a}"${v ? ` data-v="${v}"` : ''} title="${t}">${l}</button>`;
+  return `<div class="rt-bar" role="toolbar" aria-label="Format teks">
+    <select id="t-font" title="Jenis huruf">${RT_FONTS.map(([v, l]) => `<option value="${esc(v)}">${l}</option>`).join('')}</select>
+    <select id="t-size" title="Ukuran huruf"><option value="">Ukuran</option>${RT_SIZES.map(z => `<option value="${z}">${z}</option>`).join('')}</select>
+    <span class="rt-g">${b('fmt', '<b>B</b>', 'Tebal (⌘B)', 'bold')}${b('fmt', '<i>I</i>', 'Miring (⌘I)', 'italic')}${b('fmt', '<u>U</u>', 'Garis bawah (⌘U)', 'underline')}${b('fmt', '<s>S</s>', 'Coret', 'strikeThrough')}</span>
+    <span class="rt-g"><label class="rb rc" title="Warna teks"><span>A</span><input type="color" id="t-fc" value="#e03131"></label><label class="rb rc" title="Warna stabilo / latar teks"><span>🖍</span><input type="color" id="t-bc" value="#ffe066"></label></span>
+    <span class="rt-g">${b('fmt', '≡', 'Rata kiri', 'justifyLeft')}${b('fmt', '☰', 'Rata tengah', 'justifyCenter')}${b('fmt', '⫶≡', 'Rata kanan', 'justifyRight')}${b('fmt', '▤', 'Rata kiri-kanan', 'justifyFull')}</span>
+    <span class="rt-g">${b('fmt', '•≡', 'Daftar berpoin', 'insertUnorderedList')}${b('fmt', '1.', 'Daftar bernomor', 'insertOrderedList')}</span>
+    <select id="t-tbl" title="Tabel"><option value="">⊞ Tabel</option><option value="new">Sisipkan tabel…</option><option value="row">＋ Baris di bawah</option><option value="col">＋ Kolom di kanan</option><option value="merge">⇔ Gabung sel (ke kanan / yang dipilih)</option><option value="split">⇹ Pisah sel</option><option value="delrow">− Hapus baris</option><option value="delcol">− Hapus kolom</option><option value="del">🗑 Hapus tabel</option></select>
+    <label class="rb" title="Sisipkan gambar">🖼<input type="file" id="t-img" accept="image/*" multiple hidden></label>
+    ${b('fmt', '⌫A', 'Hapus format', 'removeFormat')}
+  </div>`;
+}
+function rtFocus() { // put the caret back where it was before a toolbar control took focus
+  const el = $('#e-body'); if (!el) return null; const cur = getSelection();
+  if (cur.rangeCount && el.contains(cur.anchorNode)) { el.focus({ preventScroll: true }); return el; } // selection already in the note
+  el.focus({ preventScroll: true });
+  if (S.rtRange && el.contains(S.rtRange.startContainer)) { const sel = getSelection(); sel.removeAllRanges(); sel.addRange(S.rtRange); }
+  return el;
+}
+function rtCmd(cmd, val) {
+  if (!rtFocus()) return;
+  document.execCommand('styleWithCSS', false, true);
+  if (cmd === 'fontSize') { // execCommand only knows sizes 1–7 → mark with 7, then swap to real px
+    document.execCommand('styleWithCSS', false, false); document.execCommand('fontSize', false, '7');
+    const made = [...$('#e-body').querySelectorAll('font[size="7"]')].map(f => { const sp = document.createElement('span'); sp.style.fontSize = val + 'px'; sp.append(...f.childNodes); f.replaceWith(sp); sp.querySelectorAll('[style*="font-size"]').forEach(x => x.style.fontSize = ''); return sp; });
+    if (made.length) { const r = document.createRange(), sel = getSelection(); r.setStartBefore(made[0]); r.setEndAfter(made.at(-1)); sel.removeAllRanges(); sel.addRange(r); S.rtRange = r.cloneRange(); } // keep the text selected for the next format
+    document.execCommand('styleWithCSS', false, true);
+  } else document.execCommand(cmd, false, val ?? null);
+  rtChanged();
+}
+function rtTable(op) {
+  const el = rtFocus(); if (!el) return;
+  if (op === 'new') {
+    const m = /^\s*(\d{1,2})\s*[x×*,\s]\s*(\d{1,2})\s*$/i.exec(prompt('Ukuran tabel — baris x kolom:', '3x3') || ''); if (!m) return;
+    const r = Math.min(+m[1], 50), c = Math.min(+m[2], 12); if (!r || !c) return;
+    rtFocus(); document.execCommand('insertHTML', false, `<table><tbody>${Array.from({ length: r }, (_, i) => `<tr>${(i ? '<td><br></td>' : '<th><br></th>').repeat(c)}</tr>`).join('')}</tbody></table><div><br></div>`);
+    return rtChanged();
+  }
+  const node = getSelection().anchorNode, cell = (node?.nodeType === 1 ? node : node?.parentElement)?.closest('td,th');
+  if (!cell || !el.contains(cell)) { toast('Taruh kursor di dalam tabel dulu.'); return; }
+  const tr = cell.parentElement, table = cell.closest('table'), ci = cell.cellIndex, rows = [...table.rows];
+  if (op === 'row') { const n = document.createElement('tr'); for (let i = 0; i < tr.cells.length; i++) n.insertCell().innerHTML = '<br>'; tr.after(n); }
+  if (op === 'col') for (const r of rows) { const ref = r.cells[Math.min(ci, r.cells.length - 1)], n = document.createElement(ref?.tagName === 'TH' ? 'th' : 'td'); n.innerHTML = '<br>'; ref ? ref.after(n) : r.append(n); }
+  if (op === 'delrow') { tr.remove(); if (!table.rows.length) table.remove(); }
+  if (op === 'delcol') { for (const r of rows) r.cells[ci]?.remove(); if (!table.rows[0]?.cells.length) table.remove(); }
+  if (op === 'del') table.remove();
+  if (op === 'merge') { // merge the selected cells of this row, or this cell with the one on its right
+    const sel = getSelection(), fc = (sel.focusNode?.nodeType === 1 ? sel.focusNode : sel.focusNode?.parentElement)?.closest('td,th');
+    let a = ci, b = fc && fc.parentElement === tr && fc !== cell ? fc.cellIndex : ci + 1; if (b < a) [a, b] = [b, a];
+    if (b >= tr.cells.length) { toast('Tidak ada sel di kanan untuk digabung.'); return; }
+    const first = tr.cells[a];
+    for (let i = b; i > a; i--) { const c = tr.cells[i]; if (c.textContent.trim() || c.querySelector('img')) first.append(' ', ...c.childNodes); first.colSpan += c.colSpan; c.remove(); }
+  }
+  if (op === 'split') { const n = cell.colSpan; if (n < 2) { toast('Sel ini tidak digabung.'); return; } cell.colSpan = 1; for (let i = 1; i < n; i++) { const c = document.createElement(cell.tagName); c.innerHTML = '<br>'; cell.after(c); } }
+  rtChanged();
+}
+function imgData(file) { // shrink photos so notes stay light: max 1600px, JPEG (PNG kept for small graphics)
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), im = new Image();
+    im.onload = () => { URL.revokeObjectURL(url); const k = Math.min(1, 1600 / Math.max(im.width, im.height)), cv = document.createElement('canvas'); cv.width = Math.round(im.width * k); cv.height = Math.round(im.height * k);
+      const g = cv.getContext('2d'), png = file.type === 'image/png' && file.size < 300e3; if (!png) { g.fillStyle = '#fff'; g.fillRect(0, 0, cv.width, cv.height); }
+      g.drawImage(im, 0, 0, cv.width, cv.height); res(cv.toDataURL(png ? 'image/png' : 'image/jpeg', 0.82)); };
+    im.onerror = () => { URL.revokeObjectURL(url); rej(new Error('bukan gambar')); }; im.src = url;
+  });
+}
+async function rtImages(files) {
+  const list = [...files].filter(f => f.type.startsWith('image/')); if (!list.length) return;
+  try { const srcs = await Promise.all(list.map(imgData)); if (!rtFocus()) return; document.execCommand('insertHTML', false, srcs.map(s => `<img src="${s}">`).join(' ')); rtChanged(); toast(srcs.length + ' gambar disisipkan 🖼'); }
+  catch (e) { toast('Gagal menyisipkan gambar: ' + e.message); }
+}
+function zoomImg(src) { // full-size view on top of everything (incl. the editor dialog)
+  let z = $('#zoom'); if (!z) { z = document.createElement('dialog'); z.id = 'zoom'; z.addEventListener('click', () => z.close()); document.body.appendChild(z); }
+  z.innerHTML = `<img src="${src}" alt=""><button type="button" class="zx" aria-label="Tutup">×</button>`; z.showModal();
+}
+
+// ---------- find in note ----------
+const findBar = () => `<div class="ed-find"><span aria-hidden="true">🔍</span><input id="f-q" type="text" placeholder="Cari di catatan ini…" value="${esc(S.edit.f.q)}" autocomplete="off" enterkeyhint="search"><span class="muted small" id="f-n"></span>
+  <button type="button" class="ib" data-a="fprev" title="Sebelumnya (Shift+Enter)">↑</button><button type="button" class="ib" data-a="fnext" title="Berikutnya (Enter)">↓</button><button type="button" class="ib" data-a="fclose" title="Tutup pencarian (Esc)">×</button></div>`;
+let findT = null;
+function findSoon() { if (!S.edit?.f) return; clearTimeout(findT); findT = setTimeout(() => runFind(0, true), 150); }
+function clearFind() { if (window.CSS?.highlights) { CSS.highlights.delete('fnd'); CSS.highlights.delete('fnd-cur'); } document.querySelectorAll('.cl-row.hit').forEach(r => r.classList.remove('hit', 'cur')); }
+function runFind(move, quiet) { // move: 0 stay, 1 next, -1 previous
+  const F = S.edit?.f; if (!F) return; clearFind();
+  const q = F.q, out = $('#f-n'), hits = [], MAX = 5000;
+  if (q) {
+    const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), body = $('#e-body');
+    if (body) { // rich text: map matches in the joined text back to DOM ranges
+      const nodes = [], starts = []; let txt = '';
+      const w = document.createTreeWalker(body, NodeFilter.SHOW_TEXT); for (let n; (n = w.nextNode());) { nodes.push(n); starts.push(txt.length); txt += n.data; }
+      const at = pos => { let lo = 0, hi = nodes.length - 1; while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (starts[mid] <= pos) lo = mid; else hi = mid - 1; } return [nodes[lo], pos - starts[lo]]; };
+      for (let m; hits.length < MAX && (m = re.exec(txt));) { const r = document.createRange(), [a, ao] = at(m.index), [b, bo] = at(m.index + m[0].length - 1); r.setStart(a, ao); r.setEnd(b, bo + 1); hits.push(r); }
+    } else document.querySelectorAll('.cl-in[data-ct]').forEach(inp => { re.lastIndex = 0; while (hits.length < MAX && re.exec(inp.value)) hits.push(inp.closest('.cl-row')); });
+  }
+  const n = hits.length; F.i = n ? ((F.i + move) % n + n) % n : 0;
+  if (out) out.textContent = q ? (n ? `${F.i + 1}/${n}${n >= MAX ? '+' : ''}` : 'Tidak ada') : '';
+  if (!n) return;
+  const cur = hits[F.i];
+  if (cur instanceof Range) {
+    if (window.Highlight) { CSS.highlights.set('fnd', new Highlight(...hits)); CSS.highlights.set('fnd-cur', new Highlight(cur)); }
+    const box = $('#e-body'), r = cur.getBoundingClientRect(), b = box.getBoundingClientRect();
+    if (r.top < b.top || r.bottom > b.bottom) box.scrollTop += r.top - b.top - b.height / 3;
+    F.range = cur;
+  } else {
+    hits.forEach(r => r.classList.add('hit')); cur.classList.add('cur'); cur.scrollIntoView({ block: 'nearest' }); F.range = null;
+  }
+}
+function openFind() {
+  const E = S.edit; if (!E) return;
+  if (!E.f) { const sel = String(getSelection() || '').trim(); E.f = { q: sel && sel.length < 80 && !sel.includes('\n') ? sel : '', i: 0 }; $('.ed-bar').insertAdjacentHTML('afterend', findBar()); $('[data-a=find]')?.classList.add('on'); }
+  const i = $('#f-q'); i.focus(); i.select(); runFind(0);
+}
+function closeFind() {
+  const E = S.edit; if (!E?.f) return; const r = E.f.range; E.f = null; clearFind();
+  $('.ed-find')?.remove(); $('[data-a=find]')?.classList.remove('on');
+  const body = $('#e-body'); if (r && body) { body.focus(); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); } // land on the last match
+}
+
 function clRows(ro) {
   const items = S.edit.d.items || [];
   const row = (i, ix) => `<div class="cl-row ${i.d ? 'dn' : ''}"><input type="checkbox" data-ci="${ix}"${i.d ? ' checked' : ''}${ro ? ' disabled' : ''}><input type="text" class="cl-in" data-ct="${ix}" value="${esc(i.t)}"${ro ? ' disabled' : ''}>${ro ? '' : `<button type="button" class="x" data-a="cdel" data-v="${ix}" aria-label="Hapus">×</button>`}</div>`;
@@ -605,10 +794,10 @@ function clRows(ro) {
 let saveT = null;
 function editChanged(redraw) { S.edit.dirty = true; clearTimeout(saveT); saveT = setTimeout(flushEdit, 500); if (redraw) { const f = document.activeElement?.id; drawEditor(); if (f) $('#' + f)?.focus(); } }
 function flushEdit() {
-  clearTimeout(saveT); const E = S.edit; if (!E || !E.dirty || RO()) return; E.dirty = false;
+  clearTimeout(saveT); syncRt(); const E = S.edit; if (!E || !E.dirty || RO()) return; E.dirty = false;
   const d = { ...E.d, items: (E.d.items || []).filter(i => i.t.trim() || i.d) };
   const old = E.k ? S.items.get(E.k) : null;
-  if (!old && !d.title.trim() && !d.body.trim() && !d.items.length) return; // empty new note: nothing to save
+  if (!old && !d.title.trim() && !(d.body || '').trim() && !d.items.length) return; // empty new note: nothing to save
   const it = old ? { ...old, data: d } : { id: E.id, owner: S.user, kind: 'note', data: d, updated: 0, deleted: false };
   put(it, true); E.k = key(it); render();
   const info = $('#e-info'); if (info) info.textContent = 'Tersimpan ' + hms(new Date()) + ' ✓';
@@ -697,6 +886,9 @@ const A = {
   sec: el => { S.secOpen = false; S.sec = el.dataset.v; LS.set('sec', S.sec); window.scrollTo(0, 0); render(); },
   menu: () => openMenu(),
   close: () => dlg().close(),
+  find: () => S.edit?.f ? closeFind() : openFind(),
+  fnext: () => runFind(1), fprev: () => runFind(-1), fclose: () => closeFind(),
+  fmt: el => rtCmd(el.dataset.v),
   logout: () => logout(),
   new: () => openEditor(null, S.sec.startsWith('cat:') && !S.admin ? { cat: S.sec.slice(4) } : S.sec === 'fav' ? { fav: true } : S.sec === 'pin' ? { pinned: true } : S.sec.startsWith('tag:') ? { body: '\n\n#' + S.sec.slice(4) } : {}),
   newlist: () => openEditor(null, { type: 'list', ...(S.sec.startsWith('cat:') && !S.admin ? { cat: S.sec.slice(4) } : {}) }),
@@ -713,8 +905,8 @@ const A = {
   purge: () => { const n = S.items.get(S.edit.k); if (!n || !confirm('Hapus permanen catatan ini? Tidak bisa dikembalikan.')) return; dlg().close(); put({ ...n, deleted: true, data: {} }); toast('Dihapus permanen.'); },
   etype: () => {
     const d = S.edit.d;
-    if (d.type === 'list') { d.body = (d.items || []).map(i => (i.d ? '✓ ' : '') + i.t).join('\n'); d.items = []; d.type = 'text'; }
-    else { d.items = (d.body || '').split('\n').map(t => t.replace(/^\s*([-*•]|\d+[.)]|☐|☑|✓|\[ ?x?\])\s*/i, '').trim()).filter(Boolean).map(t => ({ t, d: false })); d.body = ''; d.type = 'list'; }
+    if (d.type === 'list') { d.body = (d.items || []).map(i => (i.d ? '✓ ' : '') + i.t).join('\n'); d.items = []; d.type = 'text'; d.html = ''; }
+    else { d.html = ''; d.items = (d.body || '').split('\n').map(t => t.replace(/^\s*([-*•]|\d+[.)]|☐|☑|✓|\[ ?x?\])\s*/i, '').trim()).filter(Boolean).map(t => ({ t, d: false })); d.body = ''; d.type = 'list'; }
     editChanged(true);
   },
   cdel: el => { S.edit.d.items.splice(Number(el.dataset.v), 1); editChanged(true); },
@@ -744,8 +936,18 @@ const A = {
 };
 document.addEventListener('click', ev => {
   if (ev.target.closest('a[href]:not([data-a])')) return; // links inside notes
+  if (ev.target.tagName === 'IMG' && ev.target.closest('.rt')) { ev.preventDefault(); ev.stopPropagation(); zoomImg(ev.target.src); return; }
   const el = ev.target.closest('[data-a]'); if (!el || !A[el.dataset.a]) return;
-  ev.preventDefault(); ev.stopPropagation(); A[el.dataset.a](el);
+  ev.preventDefault(); ev.stopPropagation(); syncRt(); A[el.dataset.a](el);
+});
+document.addEventListener('mousedown', ev => { if (ev.target.closest('.rt-bar button, .ed-find button')) ev.preventDefault(); }); // keep caret/selection in the note
+document.addEventListener('selectionchange', () => { const s = getSelection(), b = $('#e-body'); if (s.rangeCount && b?.isContentEditable && b.contains(s.anchorNode)) S.rtRange = s.getRangeAt(0).cloneRange(); });
+document.addEventListener('paste', ev => { // pasted web/Word content: keep formatting + tables, drop everything unsafe
+  const b = $('#e-body'); if (!b?.isContentEditable || !b.contains(ev.target)) return;
+  const imgs = [...(ev.clipboardData?.files || [])].filter(f => f.type.startsWith('image/'));
+  if (imgs.length) { ev.preventDefault(); rtImages(imgs); return; }
+  const h = ev.clipboardData?.getData('text/html'); if (!h) return;
+  ev.preventDefault(); document.execCommand('insertHTML', false, cleanHtml(h.replace(/<!--[\s\S]*?-->/g, ''))); rtChanged();
 });
 document.addEventListener('input', ev => {
   const t = ev.target;
@@ -754,8 +956,9 @@ document.addEventListener('input', ev => {
   if (S.catEdit && t.dataset.cf) { S.catEdit[Number(t.dataset.v)][t.dataset.cf] = t.value; return; }
   if (!S.edit) return;
   if (t.id === 'e-title') { S.edit.d.title = t.value; editChanged(); }
-  if (t.id === 'e-body') { S.edit.d.body = t.value; editChanged(); }
-  if (t.dataset.ct !== undefined) { S.edit.d.items[Number(t.dataset.ct)].t = t.value; editChanged(); }
+  if (t.id === 'f-q') { S.edit.f.q = t.value; S.edit.f.i = 0; runFind(0); return; }
+  if (t.id === 'e-body') { rtChanged(); }
+  if (t.dataset.ct !== undefined) { S.edit.d.items[Number(t.dataset.ct)].t = t.value; editChanged(); findSoon(); }
 });
 document.addEventListener('change', ev => {
   const t = ev.target;
@@ -763,6 +966,12 @@ document.addEventListener('change', ev => {
   if (t.id === 'owner') { S.owner = t.value; render(); }
   if (t.name === 'theme') { t.value === 'auto' ? LS.del('theme') : LS.set('theme', t.value); applyTheme(); }
   if (S.edit) {
+    if (t.id === 't-font' && t.value) { const v = t.value; t.value = ''; rtCmd('fontName', v); }
+    if (t.id === 't-size' && t.value) { const v = t.value; t.value = ''; rtCmd('fontSize', v); }
+    if (t.id === 't-fc') rtCmd('foreColor', t.value);
+    if (t.id === 't-bc') rtCmd('hiliteColor', t.value);
+    if (t.id === 't-img' && t.files.length) { rtImages(t.files); t.value = ''; }
+    if (t.id === 't-tbl' && t.value) { const v = t.value; t.value = ''; rtTable(v); }
     if (t.id === 'e-cat') { if (t.value === '__new') { const id = newCatPrompt(); S.edit.d.cat = id || S.edit.d.cat; editChanged(true); } else { S.edit.d.cat = t.value; editChanged(); } }
     if (t.name === 'e-color') { S.edit.d.color = t.value; editChanged(true); }
     if (t.dataset.ci !== undefined) { S.edit.d.items[Number(t.dataset.ci)].d = t.checked; editChanged(true); }
@@ -776,6 +985,8 @@ document.addEventListener('change', ev => {
 });
 document.addEventListener('keydown', ev => {
   const t = ev.target;
+  if ((ev.metaKey || ev.ctrlKey) && !ev.altKey && ev.key.toLowerCase() === 'f' && S.edit && dlg().open) { ev.preventDefault(); openFind(); return; }
+  if (t.id === 'f-q') { if (ev.key === 'Enter') { ev.preventDefault(); runFind(ev.shiftKey ? -1 : 1); } else if (ev.key === 'Escape') { ev.preventDefault(); closeFind(); } return; }
   if (ev.key === 'Enter' && t.id === 'cl-new') { ev.preventDefault(); const v = t.value.trim(); if (!v) return; S.edit.d.items.push({ t: v, d: false }); editChanged(true); $('#cl-new')?.focus(); return; }
   if (ev.key === 'Enter' && t.dataset?.ct !== undefined) { ev.preventDefault(); $('#cl-new')?.focus(); return; }
   if (ev.key === 'Backspace' && t.dataset?.ct !== undefined && !t.value) { ev.preventDefault(); S.edit.d.items.splice(Number(t.dataset.ct), 1); editChanged(true); $('#cl-new')?.focus(); return; }
@@ -798,7 +1009,8 @@ document.addEventListener('submit', ev => {
       btn.disabled = false; btn.textContent = 'Masuk'; $('#gate-err').textContent = e.message; const pi = $('#pin-in'); if (pi) { pi.value = ''; pi.focus(); } });
   }
 });
-dlg().addEventListener('close', () => { if (S.edit) flushEdit(); S.edit = null; S.catEdit = null; dlg().className = ''; render(); });
+dlg().addEventListener('cancel', ev => { if (S.edit?.f && document.activeElement?.id === 'f-q') { ev.preventDefault(); closeFind(); } });
+dlg().addEventListener('close', () => { clearFind(); if (S.edit) flushEdit(); S.edit = null; S.catEdit = null; dlg().className = ''; render(); });
 dlg().addEventListener('click', ev => { if (ev.target === dlg()) dlg().close(); }); // click on backdrop
 
 // ---------- auto update + boot ----------
