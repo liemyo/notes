@@ -116,7 +116,9 @@ dialog.ed.col{background:color-mix(in srgb,var(--nc) var(--na),var(--card))}
 .nb.rt{white-space:normal}
 .nb.rt img{max-width:90px;max-height:70px}
 .nb.rt table{font-size:12px}
-.rt-bar{display:flex;gap:4px;align-items:stretch;padding:6px 0;border-bottom:1px solid color-mix(in srgb,var(--text) 10%,transparent)}
+.rt-bar{display:flex;gap:4px;align-items:stretch;padding:6px 0}
+.rt-bar[hidden]{display:none!important}
+.rt-tog{margin:4px 0 2px}
 .rt-bar>*{flex:1 1 0;min-width:0;height:32px}
 .rt-bar>.rw{flex:2.6 1 0}
 .rt-bar .tb{white-space:nowrap;font-size:13px;padding:0 4px}
@@ -159,9 +161,10 @@ dialog.ed.col{background:color-mix(in srgb,var(--nc) var(--na),var(--card))}
 .cl-done{margin:10px 0 2px}
 .x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:20px;line-height:1;padding:0 4px}
 .ed-opts{display:flex;gap:10px;align-items:center}
-.ed-tog{display:flex;justify-content:flex-end;border-top:1px solid color-mix(in srgb,var(--text) 10%,transparent);margin-bottom:-4px}
-.ed-tog .et{margin-top:-15px;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:18px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
-.ed-tog .et:hover{border-color:var(--acc)}
+.ed-tog{display:block;margin:2px 0}
+.ed-tog .et{width:100%;height:20px;display:flex;align-items:center;gap:10px;background:none;border:0;padding:0;margin:0;color:var(--muted);font-size:17px;line-height:1;cursor:pointer}
+.ed-tog .et::before,.ed-tog .et::after{content:'';flex:1;height:1px;background:color-mix(in srgb,var(--text) 16%,transparent)}
+.ed-tog .et:hover{color:var(--acc)}.ed-tog .et:hover::before,.ed-tog .et:hover::after{background:var(--acc)}
 .ed-low{display:flex;flex-direction:column;gap:8px}.ed-low[hidden]{display:none}
 .ed-opts select{flex:1 1 0;min-width:0;padding:5px 9px;font-size:13px;background:color-mix(in srgb,var(--card) 70%,transparent)}
 .swatch{display:flex;gap:5px;flex-wrap:wrap}
@@ -263,6 +266,7 @@ dialog.ed.col{background:color-mix(in srgb,var(--nc) var(--na),var(--card))}
   .rt-bar{display:grid;grid-template-columns:repeat(21,1fr);gap:5px}
   .rt-bar>*{grid-column:span 3;height:34px}.rt-bar>.rw{grid-column:span 7}
   .rt-bar select{font-size:14px}
+  .ed-tog .et{height:28px;font-size:19px}
   .tbl-menu{flex-direction:column;gap:10px}.tbl-grid{grid-template-columns:repeat(var(--c),1fr);width:100%}.tbl-grid button{width:auto;height:22px}.tbl-new{width:100%}
   .tbl-ops{min-width:0;width:100%;display:grid;grid-template-columns:1fr 1fr}.tbl-ops>span,.tbl-ops [data-v=del]{grid-column:1/-1}.tbl-ops .btn{width:100%}
   .toast{bottom:90px}
@@ -274,7 +278,7 @@ dialog.ed.col{background:color-mix(in srgb,var(--nc) var(--na),var(--card))}
 <dialog id="dlg"></dialog>
 <noscript>Notes memerlukan JavaScript.</noscript>
 <script>// Notes — catatan dengan favorit, kategori, tag, checklist, arsip & sampah. Akun (nama pengguna + PIN) sama dengan Planner; data di Supabase (proyek saku-yuk), sinkron real time.
-const BUILD = '20261003-215818';
+const BUILD = '20261003-221034';
 const SB_URL = 'https://bbptcxpzzvgpxqylkrmw.supabase.co', SB_KEY = 'sb_publishable_Ny-WHCEZ3WmcLFsPBx9QeQ_9xgo7MxR'; // public key; tables closed, only nt_*/pl_* functions
 const ADMIN = 'admin';
 
@@ -692,7 +696,8 @@ const RT_FONTS = [['', 'Font'], ['-apple-system,BlinkMacSystemFont,Segoe UI,Robo
 const RT_SIZES = [12, 14, 16, 18, 20, 24, 28, 32, 40];
 function rtBar() { // flat list: one full row on desktop, an even 3 / 7 / 7 grid on phones
   const b = (a, l, t, v = '') => `<button type="button" class="rb" data-a="${a}"${v ? ` data-v="${v}"` : ''} title="${t}">${l}</button>`;
-  return `<div class="rt-bar" role="toolbar" aria-label="Format teks">
+  const hide = LS.get('rtbar') === 'hide';
+  return `<div class="rt-bar" role="toolbar" aria-label="Format teks"${hide ? ' hidden' : ''}>
     <select id="t-font" class="rw" title="Jenis huruf">${RT_FONTS.map(([v, l]) => `<option value="${esc(v)}">${l}</option>`).join('')}</select>
     <select id="t-size" class="rw" title="Ukuran huruf"><option value="">Ukuran</option>${RT_SIZES.map(z => `<option value="${z}">${z}</option>`).join('')}</select>
     <button type="button" class="rb rw tb" data-a="tblmenu" title="Tabel">⊞ Tabel ▾</button>
@@ -702,7 +707,7 @@ function rtBar() { // flat list: one full row on desktop, an even 3 / 7 / 7 grid
     ${b('fmt', '≡', 'Rata kiri', 'justifyLeft')}${b('fmt', '☰', 'Rata tengah', 'justifyCenter')}${b('fmt', '⫶≡', 'Rata kanan', 'justifyRight')}${b('fmt', '▤', 'Rata kiri-kanan', 'justifyFull')}
     ${b('fmt', '•≡', 'Daftar berpoin', 'insertUnorderedList')}${b('fmt', '1.', 'Daftar bernomor', 'insertOrderedList')}
     <label class="rb" title="Sisipkan gambar">🖼<input type="file" id="t-img" accept="image/*" multiple hidden></label>
-  </div>`;
+  </div><div class="ed-tog rt-tog"><button type="button" class="et" data-a="rtbar" aria-expanded="${!hide}" title="${hide ? 'Tampilkan toolbar format' : 'Sembunyikan toolbar format'}">${hide ? '⌄' : '⌃'}</button></div>`;
 }
 function rtFocus() { // put the caret back where it was before a toolbar control took focus
   const el = $('#e-body'); if (!el) return null; const cur = getSelection();
@@ -956,6 +961,11 @@ const A = {
   find: () => S.edit?.f ? closeFind() : openFind(),
   fnext: () => runFind(1), fprev: () => runFind(-1), fclose: () => closeFind(),
   fmt: el => rtCmd(el.dataset.v),
+  rtbar: el => { // hide / show the formatting toolbar (remembered per device)
+    const hide = LS.get('rtbar') !== 'hide'; hide ? LS.set('rtbar', 'hide') : LS.del('rtbar');
+    if (hide) toggleTblMenu(false); $('.rt-bar').hidden = hide;
+    el.textContent = hide ? '⌄' : '⌃'; el.title = hide ? 'Tampilkan toolbar format' : 'Sembunyikan toolbar format'; el.setAttribute('aria-expanded', String(!hide));
+  },
   edlow: el => { // hide / show the colour, category and export area (remembered per device)
     const hide = LS.get('edlow') !== 'hide'; hide ? LS.set('edlow', 'hide') : LS.del('edlow');
     $('.ed-low').hidden = hide; el.textContent = hide ? '⌃' : '⌄'; el.title = hide ? 'Tampilkan opsi' : 'Sembunyikan opsi'; el.setAttribute('aria-expanded', String(!hide));
