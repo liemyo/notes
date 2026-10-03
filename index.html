@@ -1,0 +1,780 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Notes</title>
+<meta name="description" content="Notes: catatan sederhana dengan favorit, kategori, tag, checklist, arsip dan sampah — sinkron real time di HP dan laptop.">
+<meta name="theme-color" content="#d98a00">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%23f0a020'/><path d='M30 30h40M30 50h40M30 70h24' fill='none' stroke='white' stroke-width='9' stroke-linecap='round'/></svg>">
+<style>:root{--bg:#f6f6f3;--card:#fff;--soft:#efefea;--line:#e3e3dc;--text:#1b1c1f;--muted:#6b6e76;--acc:#d98a00;--acc-ink:#fff;--star:#f0a020;--red:#d93d42;--na:62%;--shadow:0 1px 2px rgba(20,20,10,.05),0 4px 14px rgba(20,20,10,.05);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#121316;--card:#1b1d22;--soft:#24262c;--line:#2e3138;--text:#eef0f3;--muted:#9da2ad;--acc:#ffb02e;--acc-ink:#1b1200;--star:#ffc04d;--red:#ff6b70;--na:24%;--shadow:none;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#121316;--card:#1b1d22;--soft:#24262c;--line:#2e3138;--text:#eef0f3;--muted:#9da2ad;--acc:#ffb02e;--acc-ink:#1b1200;--star:#ffc04d;--red:#ff6b70;--na:24%;--shadow:none;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+input,select,textarea{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 11px;min-width:0;color:var(--text)}
+input:focus,select:focus,textarea:focus{outline:2px solid color-mix(in srgb,var(--acc) 45%,transparent);border-color:var(--acc)}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 13px;cursor:pointer;white-space:nowrap;font-weight:500}
+.btn:hover{background:var(--soft)}
+.btn.primary{background:var(--acc);border-color:var(--acc);color:var(--acc-ink);font-weight:600}
+.btn.danger{color:var(--red)}
+.btn.sm{padding:5px 10px;font-size:13px}
+.muted{color:var(--muted)}.small{font-size:13px}
+.ib{border:0;background:none;cursor:pointer;width:34px;height:34px;border-radius:50%;display:inline-grid;place-items:center;font-size:18px;color:var(--muted);padding:0;flex:none}
+.ib:hover{background:color-mix(in srgb,var(--text) 8%,transparent)}
+.ib.on{color:var(--star)}
+.ib:disabled{opacity:.3;cursor:default}
+/* top bar */
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1280px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:17px;width:208px;flex:none}
+.logo{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(135deg,#f5b335,#e07b00);color:#fff;font-size:16px}
+.search{flex:1;max-width:620px;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:0 12px}
+.search:focus-within{border-color:var(--acc)}
+.search input{border:0;outline:0;flex:1;background:none;padding:9px 0}
+.top-r{margin-left:auto;display:flex;align-items:center;gap:10px}
+.sync{font-size:12px;color:var(--muted);white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);border-radius:99px;padding:5px 11px;cursor:pointer;font-weight:600;font-size:13px;white-space:nowrap}
+/* layout */
+.wrap{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:220px 1fr;gap:18px;padding:0 16px}
+.side{position:sticky;top:58px;align-self:start;max-height:calc(100dvh - 58px);overflow:auto;padding:14px 0 40px;display:flex;flex-direction:column;gap:2px}
+.nav{display:flex;align-items:center;gap:10px;border:0;background:none;padding:8px 12px;border-radius:0 99px 99px 0;margin-left:-16px;padding-left:28px;cursor:pointer;text-align:left;color:var(--text);font-weight:500}
+.nav:hover{background:var(--soft)}
+.nav.on{background:color-mix(in srgb,var(--acc) 18%,transparent);font-weight:700}
+.nav .ic{width:20px;text-align:center}
+.nav .lb{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav .n{font-size:12px;color:var(--muted);font-weight:600}
+.side-h{display:flex;align-items:center;justify-content:space-between;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:14px 12px 4px}
+.mini{border:0;background:none;color:var(--acc);font-weight:700;font-size:12px;cursor:pointer;text-transform:none;letter-spacing:0}
+.tags{display:flex;flex-wrap:wrap;gap:5px;padding:2px 8px}
+.tagb{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:2px 9px;font-size:12.5px;cursor:pointer;color:var(--text)}
+.tagb small{color:var(--muted)}
+.tagb.on{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 15%,transparent)}
+.owner{margin:0 0 8px;width:100%}
+main{min-width:0;padding:14px 0 100px}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.head h1{margin:0;font-size:22px;letter-spacing:-.01em}
+.hc{font-size:14px;color:var(--muted);font-weight:600;margin-left:4px}
+.tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tools select{padding:5px 9px;font-size:13px}
+.quick{max-width:600px;margin:0 auto 22px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:6px 6px 6px 16px;display:flex;align-items:center;color:var(--muted);cursor:text;font-weight:500}
+.quick span{margin-left:auto}
+.lbl{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:6px 4px 8px}
+.empty{text-align:center;color:var(--muted);margin:50px 10px}
+/* cards */
+.grid.grid{columns:240px;column-gap:12px;margin-bottom:18px}
+.grid.list{display:flex;flex-direction:column;gap:10px;max-width:680px;margin:0 auto 18px}
+.ncard{break-inside:avoid;display:block;margin-bottom:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px 10px;cursor:pointer;box-shadow:var(--shadow);transition:box-shadow .15s,border-color .15s;overflow:hidden}
+.grid.list .ncard{margin:0}
+.ncard:hover{border-color:color-mix(in srgb,var(--text) 25%,transparent)}
+.ncard:focus-visible{outline:2px solid var(--acc)}
+.ncard.col{background:color-mix(in srgb,var(--nc) var(--na),var(--card));border-color:transparent}
+.nh{display:flex;align-items:flex-start;gap:6px}
+.nh h3{margin:2px 0 6px;font-size:15.5px;flex:1;overflow-wrap:anywhere;line-height:1.35}
+.nh .ib{width:28px;height:28px;margin:-4px -6px 0 0;font-size:18px}
+.nb{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;color:color-mix(in srgb,var(--text) 85%,transparent);max-height:15em;overflow:hidden}
+.nb a{color:var(--acc)}
+.ht{color:var(--acc);font-weight:600}
+.cl{display:flex;flex-direction:column;gap:2px;font-size:14px}
+.cli{display:flex;gap:6px;align-items:flex-start}
+.cli.dn span:last-child{text-decoration:line-through;color:var(--muted)}
+.cb{border:0;background:none;padding:0;cursor:pointer;font-size:15px;line-height:1.4;color:var(--muted)}
+.nf{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12px;margin-top:10px}
+.cat{background:color-mix(in srgb,var(--text) 8%,transparent);border-radius:99px;padding:1px 8px;font-weight:600}
+.who{font-weight:700;color:var(--acc)}
+.fab{display:none}
+/* editor dialog */
+dialog{border:0;border-radius:18px;padding:0;width:min(560px,calc(100vw - 24px));max-height:calc(100dvh - 24px);background:var(--card);color:var(--text);box-shadow:0 30px 80px rgba(0,0,0,.35)}
+dialog::backdrop{background:rgba(10,10,10,.45)}
+dialog.ed{width:min(720px,calc(100vw - 24px))}
+dialog.ed.col{background:color-mix(in srgb,var(--nc) var(--na),var(--card))}
+.dlg{padding:18px;display:flex;flex-direction:column;gap:12px}
+.dlg h2{margin:0;font-size:18px}
+.ed-in{padding:10px 16px 14px;gap:8px;min-height:min(560px,calc(100dvh - 24px))}
+.ed-bar{display:flex;align-items:center;gap:4px;margin:0 -6px}
+.ed-bar .sp,.ed-foot .sp{flex:1}
+.e-title{border:0;background:none;font-size:22px;font-weight:700;padding:6px 0;outline:0!important}
+.e-body{border:0;background:none;flex:1;min-height:300px;resize:none;padding:4px 0;font-size:16px;line-height:1.6;outline:0!important;width:100%}
+.e-title:disabled,.e-body:disabled{color:var(--text);-webkit-text-fill-color:var(--text);opacity:1}
+.cl-ed{flex:1;min-height:200px;display:flex;flex-direction:column;gap:2px}
+.cl-row{display:flex;align-items:center;gap:8px}
+.cl-row input[type=checkbox]{width:18px;height:18px;flex:none;accent-color:var(--acc)}
+.cl-row input[type=text]{flex:1;border:0;background:none;padding:6px 2px;border-bottom:1px solid transparent;border-radius:0;outline:0}
+.cl-row input[type=text]:focus{border-bottom-color:var(--line)}
+.cl-row.dn input[type=text]{text-decoration:line-through;color:var(--muted)}
+.cl-row.add span{width:18px;text-align:center;color:var(--muted)}
+.cl-done{margin:10px 0 2px}
+.x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:20px;line-height:1;padding:0 4px}
+.ed-opts{display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-top:1px solid color-mix(in srgb,var(--text) 10%,transparent);padding-top:10px}
+.ed-opts select{padding:5px 9px;font-size:13px;background:color-mix(in srgb,var(--card) 70%,transparent)}
+.swatch{display:flex;gap:5px;flex-wrap:wrap}
+.swatch label{position:relative}
+.swatch input{position:absolute;opacity:0;pointer-events:none}
+.swatch span{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;cursor:pointer;border:1px solid color-mix(in srgb,var(--text) 18%,transparent);font-size:12px;color:var(--muted)}
+.swatch input:checked+span{outline:2px solid var(--text);outline-offset:1px}
+.ed-foot{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.ed-foot .btn{background:color-mix(in srgb,var(--card) 70%,transparent)}
+.fld{display:flex;flex-direction:column;gap:6px}
+.fld>span{font-size:12.5px;font-weight:700;color:var(--muted)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg label{flex:1;min-width:80px}
+.seg input[type=radio]{position:absolute;opacity:0;pointer-events:none}
+.seg label span{display:block;text-align:center;border:1px solid var(--line);border-radius:10px;padding:8px;cursor:pointer;font-weight:600}
+.seg input:checked+span{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 15%,transparent)}
+.dlg-f{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.dlg-f .sp{flex:1}
+.cats{display:flex;flex-direction:column;gap:6px}
+.catrow{display:flex;gap:6px;align-items:center}
+.catrow input:not(.ci){flex:1}
+.catrow .ci{width:52px;text-align:center}
+.check{display:flex;align-items:center;gap:8px;font-weight:600}
+.check input{width:18px;height:18px}
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:9px 16px;border-radius:99px;font-size:14px;font-weight:600;z-index:60;box-shadow:0 10px 30px rgba(0,0,0,.25);display:flex;gap:12px;align-items:center;max-width:calc(100vw - 32px);white-space:nowrap}
+.toast button{border:0;background:none;color:var(--acc);font-weight:700;cursor:pointer;padding:0}
+.toast[hidden]{display:none}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.users{width:100%;border-collapse:collapse}
+.users th,.users td{padding:9px 12px;border-top:1px solid var(--line);text-align:left;font-size:14px}
+.users th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.users tr.click{cursor:pointer}.users tr.click:hover td{background:var(--soft)}
+.num{text-align:right!important}
+/* gate (same as Planner, warm colours) */
+.gate{position:fixed;inset:0;display:grid;place-items:center;padding:16px;background:radial-gradient(1100px 700px at 10% 0%,#c9790a 0%,transparent 60%),radial-gradient(900px 600px at 100% 100%,#8a3fd1 0%,transparent 55%),linear-gradient(160deg,#2a1d10,#141018)}
+.gate-card{width:min(380px,100%);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border-radius:24px;padding:34px 26px 24px;text-align:center;color:#fff;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.gate .logo{width:68px;height:68px;border-radius:20px;font-size:34px;margin:0 auto 12px}
+.gate h1{margin:0;font-size:27px}
+.gate-sub{margin:4px 0 22px;color:rgba(255,255,255,.75)}
+.gate-field{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:4px 14px;text-align:left;margin-bottom:10px}
+.gate-field:focus-within{border-color:#ffc56b;box-shadow:0 0 0 3px rgba(255,197,107,.3)}
+.gate-field input{flex:1;background:none;border:0;outline:0!important;color:#fff;font-size:16px;padding:10px 0}
+.gate-field input::placeholder{color:rgba(255,255,255,.6)}
+.mask-wrap{position:relative;flex:1;display:block;min-width:0}
+.mask-wrap input,#user-mask{font:500 17px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.04em;padding:10px 0}
+.mask-wrap input{width:100%;-webkit-text-fill-color:transparent;color:transparent;caret-color:#fff}
+.mask-wrap input::placeholder{-webkit-text-fill-color:rgba(255,255,255,.6);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;letter-spacing:0}
+#user-mask{position:absolute;inset:0;pointer-events:none;color:#fff;white-space:pre;overflow:hidden}
+.gate-btn{width:100%;margin-top:4px;padding:12px;font-size:16px;font-weight:700;border-radius:14px;background:linear-gradient(135deg,#f5b335,#e07b00);border:0;color:#fff;cursor:pointer}
+.gate-btn:disabled{opacity:.7}
+.gate-err{color:#ffc2c2;min-height:18px;margin-top:10px;font-size:14px}
+.gate-note{color:rgba(255,255,255,.65);font-size:12.5px;margin:6px 0 0;line-height:1.5}
+.gate .check{justify-content:center;color:rgba(255,255,255,.85);font-weight:500;font-size:14px;margin:4px 0 10px}
+@media (max-width:820px){
+  .brand{width:auto}.bname,.sync{display:none}
+  .top-in{gap:10px;padding:8px 12px}
+  .wrap{grid-template-columns:1fr;gap:0;padding:0 12px}
+  .side{position:sticky;top:51px;z-index:15;flex-direction:row;overflow-x:auto;overflow-y:hidden;max-height:none;padding:8px 0;gap:6px;background:var(--bg);margin:0 -12px;padding-left:12px;padding-right:12px;scrollbar-width:none}
+  .side::-webkit-scrollbar{display:none}
+  .nav{flex:none;margin:0;padding:6px 12px;border-radius:99px;border:1px solid var(--line);background:var(--card);font-size:13.5px}
+  .nav.on{border-color:var(--acc)}
+  .nav .ic{width:auto}
+  .side-h{display:none}.tags{display:contents}.tagb{flex:none;padding:6px 12px;font-size:13.5px}.un{display:none}
+  .owner{flex:none;width:auto;margin:0}
+  main{padding-top:8px}
+  .head h1{font-size:20px}
+  .hide-m,.quick{display:none}
+  .grid.grid{columns:2 150px;column-gap:8px}
+  .ncard{margin-bottom:8px;padding:10px 12px 8px}
+  .fab{display:grid;place-items:center;position:fixed;right:18px;bottom:calc(20px + env(safe-area-inset-bottom));width:58px;height:58px;border-radius:18px;border:0;background:var(--acc);color:var(--acc-ink);font-size:30px;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:30;cursor:pointer}
+  dialog.ed{width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;border-radius:0;margin:0}
+  .ed-in{min-height:100dvh;padding-top:calc(8px + env(safe-area-inset-top));padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+  .two{grid-template-columns:1fr}
+  .toast{bottom:90px}
+}
+</style>
+</head>
+<body>
+<div id="app"><div style="padding:40px;font-family:sans-serif;color:#888">Memuat Notes…</div></div>
+<dialog id="dlg"></dialog>
+<noscript>Notes memerlukan JavaScript.</noscript>
+<script>// Notes — catatan dengan favorit, kategori, tag, checklist, arsip & sampah. Akun (nama pengguna + PIN) sama dengan Planner; data di Supabase (proyek saku-yuk), sinkron real time.
+const BUILD = '20261003-190057';
+const SB_URL = 'https://bbptcxpzzvgpxqylkrmw.supabase.co', SB_KEY = 'sb_publishable_Ny-WHCEZ3WmcLFsPBx9QeQ_9xgo7MxR'; // public key; tables closed, only nt_*/pl_* functions
+const ADMIN = 'admin';
+
+// ---------- helpers ----------
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const LS = {
+  get: k => { try { return localStorage.getItem('notes.' + k); } catch { return null; } },
+  set: (k, v) => { try { localStorage.setItem('notes.' + k, v); } catch {} },
+  del: k => { try { localStorage.removeItem('notes.' + k); } catch {} }
+};
+const SS = { get: k => { try { return sessionStorage.getItem('notes.' + k); } catch { return null; } }, set: (k, v) => { try { sessionStorage.setItem('notes.' + k, v); } catch {} }, del: k => { try { sessionStorage.removeItem('notes.' + k); } catch {} } };
+const uid = () => { const a = crypto.getRandomValues(new Uint8Array(12)); return [...a].map(x => x.toString(36).padStart(2, '0')).join('').slice(0, 20); };
+const normUser = s => String(s ?? '').trim().toLowerCase();
+const validUser = s => /^[a-z0-9._-]{3,32}$/.test(s);
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+const hms = d => `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+function ago(t) {
+  const d = new Date(t), now = new Date(), s = (now - d) / 1000;
+  if (s < 60) return 'baru saja'; if (s < 3600) return Math.floor(s / 60) + ' mnt lalu';
+  if (ymd(d) === ymd(now)) return 'hari ini ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  const y = new Date(now); y.setDate(y.getDate() - 1); if (ymd(d) === ymd(y)) return 'kemarin ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  return `${d.getDate()} ${MON[d.getMonth()]}${d.getFullYear() !== now.getFullYear() ? ' ' + d.getFullYear() : ''}`;
+}
+const fullDT = t => { const d = new Date(t); return `${d.getDate()} ${MON[d.getMonth()]} ${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const COLORS = { '': ['Tanpa warna', 'transparent'], red: ['Merah', '#f28b82'], orange: ['Oranye', '#fbbc04'], yellow: ['Kuning', '#fff475'], green: ['Hijau', '#ccff90'], teal: ['Toska', '#a7ffeb'], blue: ['Biru', '#aecbfa'], purple: ['Ungu', '#d7aefb'], pink: ['Merah muda', '#fdcfe8'], gray: ['Abu', '#d3d6db'] };
+const DEFAULT_CATS = [{ id: 'pribadi', name: 'Pribadi', icon: '🏠' }, { id: 'kerja', name: 'Kerja', icon: '💼' }, { id: 'ide', name: 'Ide', icon: '💡' }, { id: 'belanja', name: 'Belanja', icon: '🛒' }];
+const SORTS = { upd: 'Terakhir diubah', new: 'Terbaru dibuat', old: 'Terlama dibuat', az: 'Judul A–Z' };
+const TRASH_DAYS = 30;
+const tagsOf = d => [...new Set(((d.title || '') + ' ' + (d.body || '') + ' ' + (d.items || []).map(i => i.t).join(' ')).match(/(^|\s)#[\p{L}\p{N}_-]{2,30}/gu)?.map(t => t.trim().slice(1).toLowerCase()) || [])];
+
+// ---------- state ----------
+const S = {
+  user: null, admin: false, pass: '', users: [], pin: '', hasPin: false, gate: null,
+  items: new Map(), seq: 0, queue: new Set(),
+  sec: LS.get('sec') || 'all', q: '', sort: LS.get('sort') || 'upd', layout: LS.get('layout') || 'grid', owner: '',
+  sync: { busy: false, again: false, at: null, err: '' }, edit: null, purged: false
+};
+const RO = () => S.admin;
+const key = it => it.owner + '/' + it.id;
+const cacheKey = () => S.admin ? 'admin' : 'u.' + S.user;
+const notes = () => [...S.items.values()].filter(i => !i.deleted && i.kind === 'note' && (!S.admin || !S.owner || i.owner === S.owner));
+
+function saveCache() {
+  LS.set(cacheKey() + '.items', JSON.stringify([...S.items.values()]));
+  LS.set(cacheKey() + '.seq', String(S.seq));
+  if (!S.admin) LS.set(cacheKey() + '.queue', JSON.stringify([...S.queue]));
+}
+function loadCache() {
+  S.items = new Map(); S.queue = new Set(); S.seq = 0;
+  try { for (const it of JSON.parse(LS.get(cacheKey() + '.items') || '[]')) S.items.set(key(it), it); } catch {}
+  S.seq = Number(LS.get(cacheKey() + '.seq') || 0);
+  if (!S.admin) try { S.queue = new Set(JSON.parse(LS.get(cacheKey() + '.queue') || '[]')); } catch {}
+  if (S.admin) try { S.users = JSON.parse(LS.get('admin.users') || '[]'); } catch {}
+}
+
+// ---------- categories (one 'meta' item per user) ----------
+function cats(owner = S.user) { const m = S.items.get(owner + '/categories'); return m && !m.deleted && Array.isArray(m.data.list) ? m.data.list : DEFAULT_CATS; }
+function saveCats(list) { const old = S.items.get(S.user + '/categories'); put({ ...(old || { id: 'categories', owner: S.user, kind: 'meta', deleted: false }), data: { list } }); }
+const catOf = n => n.data.cat ? cats(n.owner).find(c => c.id === n.data.cat) : null;
+const catLabel = c => (c.icon ? c.icon + ' ' : '') + c.name;
+function allCats() { // admin sees every user's categories, merged by name
+  if (!S.admin) return cats();
+  const seen = new Map(); for (const n of notes()) { const c = catOf(n); if (c && !seen.has(c.name)) seen.set(c.name, c); }
+  return [...seen.values()];
+}
+
+// ---------- data changes ----------
+function put(it, quiet) { // local write → queue → push
+  const prev = S.items.get(key(it));
+  it.updated = Math.max(Date.now(), (prev?.updated || 0) + 1);
+  S.items.set(key(it), it); S.queue.add(key(it)); saveCache(); if (!quiet) render(); pushSoon();
+}
+const newNote = data => ({ id: uid(), owner: S.user, kind: 'note', data: { title: '', body: '', type: 'text', items: [], cat: '', fav: false, pinned: false, color: '', archived: false, trashed: null, created: Date.now(), ...data }, updated: 0, deleted: false });
+const setData = (k, patch, quiet) => { const n = S.items.get(k); if (n && !RO()) put({ ...n, data: { ...n.data, ...patch } }, quiet); };
+function purgeTrash() { // trash older than 30 days is removed for good
+  if (S.admin || S.purged) return; S.purged = true;
+  const lim = Date.now() - TRASH_DAYS * 864e5;
+  for (const n of notes()) if (n.data.trashed && n.data.trashed < lim) put({ ...n, deleted: true, data: {} }, true);
+}
+
+// ---------- server ----------
+async function rpc(fn, args) { // retries: some networks drop connections
+  for (let i = 0; ; i++) {
+    try {
+      const r = await fetch(`${SB_URL}/rest/v1/rpc/${fn}`, { method: 'POST', cache: 'no-store', headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(args) });
+      if (!r.ok) { const e = new Error('server ' + r.status); e.server = true; throw e; }
+      const t = await r.text(); return t ? JSON.parse(t) : null;
+    } catch (e) { if (i >= 4 || e.server) throw navigator.onLine ? e : new Error('offline'); await new Promise(r => setTimeout(r, 300 * (i + 1))); }
+  }
+}
+let pushTimer = null;
+function pushSoon() { clearTimeout(pushTimer); pushTimer = setTimeout(syncNow, 400); showSync(); }
+async function syncNow() {
+  if (!S.user && !S.admin) return;
+  if (S.sync.busy) { S.sync.again = true; return; }
+  S.sync.busy = true; showSync(); let changed = false; const who = cacheKey();
+  try {
+    if (!S.admin && S.queue.size) {
+      const keys = [...S.queue], sent = keys.map(k => S.items.get(k)).filter(Boolean);
+      const snap = new Map(sent.map(i => [key(i), i.updated]));
+      for (let i = 0; i < sent.length; i += 100)
+        { const r = await rpc('nt_put', { p_owner: S.user, p_pin: S.pin || null, p_items: sent.slice(i, i + 100).map(({ id, kind, data, updated, deleted }) => ({ id, kind, data, updated, deleted })) });
+          if (!r?.ok) { needPin(r?.pin); return; } }
+      for (const k of keys) if (S.items.get(k)?.updated === snap.get(k)) S.queue.delete(k);
+      saveCache(); ping();
+    }
+    let rows;
+    if (S.admin) {
+      const r = await rpc('nt_admin', { p_pass: S.pass, p_after: S.seq });
+      if (!r?.ok) { logout(); return; }
+      S.users = r.users || []; LS.set('admin.users', JSON.stringify(S.users)); rows = r.rows || [];
+    } else { const r = await rpc('nt_list', { p_owner: S.user, p_after: S.seq, p_pin: S.pin || null }); if (!r?.ok) { needPin(r?.pin); return; } rows = r.rows || []; }
+    if (who !== cacheKey()) return;
+    for (const r of rows) {
+      const it = { id: r.id, owner: r.owner || S.user, kind: r.kind, data: r.data || {}, updated: Number(r.updated), deleted: !!r.deleted };
+      const cur = S.items.get(key(it));
+      if (!cur || (it.updated >= cur.updated && !S.queue.has(key(it)))) {
+        if (!cur || JSON.stringify(cur) !== JSON.stringify(it)) changed = true;
+        S.items.set(key(it), it);
+      }
+      S.seq = Math.max(S.seq, Number(r.seq));
+    }
+    if (changed || rows.length) saveCache();
+    S.sync.at = new Date(); S.sync.err = '';
+    purgeTrash();
+  } catch (e) { S.sync.err = e?.message === 'offline' ? 'offline — tersimpan di perangkat ini' : (e?.message || String(e)); }
+  finally { S.sync.busy = false; }
+  if (S.sync.again) { S.sync.again = false; return syncNow(); }
+  if (changed) render(); else showSync();
+}
+// realtime: supabase broadcast pings (no data inside), plus a 10 s check
+let sb = null, chans = [];
+async function liveStart() {
+  try {
+    if (!window.supabase) await new Promise((res, rej) => { const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2'; s.onload = res; s.onerror = rej; document.head.appendChild(s); });
+    sb ||= window.supabase.createClient(SB_URL, SB_KEY);
+    liveStop();
+    const all = sb.channel('notes-all');
+    if (S.admin) all.on('broadcast', { event: 'chg' }, () => syncNow());
+    chans.push(all.subscribe());
+    if (!S.admin) chans.push(sb.channel('notes-u-' + S.user).on('broadcast', { event: 'chg' }, () => syncNow()).subscribe());
+  } catch {}
+}
+function liveStop() { if (sb) chans.forEach(c => sb.removeChannel(c)); chans = []; }
+function ping() { for (const c of chans) try { c.send({ type: 'broadcast', event: 'chg', payload: { t: Date.now() } }); } catch {} }
+const syncText = () => S.sync.err ? '⚠ ' + S.sync.err : S.sync.busy || S.queue.size ? '⏳ Menyimpan…' : S.sync.at ? '☁ Tersinkron ' + hms(S.sync.at) : '☁ Menghubungkan…';
+function showSync() { document.querySelectorAll('.sync').forEach(e => { e.textContent = syncText(); }); }
+
+// ---------- login (same accounts & PIN as Planner) ----------
+const sha = async t => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)))].map(x => x.toString(16).padStart(2, '0')).join('');
+const pinHash = (name, pin) => sha('planner-pin:' + name + ':' + pin);
+const PIN_MSG = { need: 'Masukkan PIN.', wrong: 'PIN salah.', locked: 'Terlalu banyak PIN salah. Coba lagi 15 menit lagi.', format: 'PIN harus 4–12 angka.', invalid: 'Nama pengguna tidak valid.' };
+function needPin(code) { // server says this session's PIN is missing/wrong: back to the PIN screen
+  const name = S.user; if (!name) return;
+  liveStop(); LS.set('u.' + name + '.haspin', '1'); SS.del('pin.' + name);
+  S.user = null; S.pin = ''; S.items = new Map(); S.queue = new Set(); S.seq = 0;
+  S.gate = { name, msg: code === 'locked' ? PIN_MSG.locked : 'Akun ini memakai PIN. Masukkan PIN untuk melanjutkan.' };
+  if (dlg().open) dlg().close(); render();
+}
+async function login(raw, pass, remember, pin) {
+  const name = normUser(raw);
+  if (!validUser(name)) throw new Error('Nama pengguna 3–32 karakter: huruf, angka, titik, garis bawah, atau tanda minus.');
+  if (name === ADMIN) {
+    if (!pass) throw new Error('Masukkan password Admin.');
+    const r = await rpc('nt_admin', { p_pass: pass, p_after: 0 }).catch(e => { throw new Error('Tidak bisa menghubungi server (' + e.message + ').'); });
+    if (!r?.ok) throw new Error(r?.locked ? 'Terlalu banyak percobaan salah. Coba lagi 15 menit lagi.' : 'Password Admin salah.');
+    S.admin = true; S.user = null; S.pass = pass; S.owner = '';
+    S.items = new Map(); S.seq = 0; S.users = r.users || [];
+    for (const x of r.rows || []) { const it = { id: x.id, owner: x.owner, kind: x.kind, data: x.data || {}, updated: Number(x.updated), deleted: !!x.deleted }; S.items.set(key(it), it); S.seq = Math.max(S.seq, Number(x.seq)); }
+    saveCache(); LS.set('admin.users', JSON.stringify(S.users)); S.sync.at = new Date();
+    SS.set('admin', pass); if (remember) LS.set('session', JSON.stringify({ admin: true })); else LS.del('session');
+  } else {
+    let r = null;
+    try { r = await rpc('pl_login', { p_owner: name, p_pin: pin || null }); } catch (e) { // offline: unlock with the PIN checked on this device before
+      const h = LS.get('u.' + name + '.pinhash');
+      if (h) { if (!pin) { const er = new Error(PIN_MSG.need); er.needPin = true; throw er; } if (await pinHash(name, pin) !== h) throw new Error(PIN_MSG.wrong); }
+      else if (LS.get('u.' + name + '.haspin')) throw new Error('Tidak bisa menghubungi server (' + e.message + ').');
+    }
+    if (r && !r.ok) { const er = new Error(PIN_MSG[r.pin] || 'Gagal masuk.'); er.needPin = r.pin === 'need'; throw er; }
+    S.admin = false; S.user = name; S.pass = ''; S.pin = pin || ''; S.gate = null;
+    if (r) { S.hasPin = !!r.pin; if (r.pin) { LS.set('u.' + name + '.haspin', '1'); LS.set('u.' + name + '.pinhash', await pinHash(name, pin)); } else { LS.del('u.' + name + '.haspin'); LS.del('u.' + name + '.pinhash'); } }
+    else S.hasPin = !!pin;
+    if (pin) SS.set('pin.' + name, pin);
+    loadCache(); S.purged = false;
+    if (remember) LS.set('session', JSON.stringify({ user: name })); else { LS.del('session'); SS.set('user', name); }
+    setTimeout(syncNow, 0);
+  }
+  S.sec = 'all'; S.q = '';
+  liveStart();
+}
+function logout() {
+  liveStop(); LS.del('session'); SS.del('admin'); SS.del('user'); if (S.user) SS.del('pin.' + S.user); S.pin = ''; S.gate = null;
+  S.user = null; S.admin = false; S.pass = ''; S.items = new Map(); S.queue = new Set(); S.seq = 0; S.sync = { busy: false, again: false, at: null, err: '' };
+  if (dlg().open) dlg().close(); render();
+}
+
+// ---------- list logic ----------
+function inSec(n, sec) {
+  const d = n.data;
+  if (sec === 'trash') return !!d.trashed;
+  if (d.trashed) return false;
+  if (sec === 'arch') return !!d.archived;
+  if (d.archived) return false;
+  if (sec === 'all') return true;
+  if (sec === 'fav') return !!d.fav;
+  if (sec === 'pin') return !!d.pinned;
+  if (sec === 'nocat') return !catOf(n);
+  if (sec.startsWith('cat:')) { const c = catOf(n); return !!c && (S.admin ? c.name === sec.slice(4) : c.id === sec.slice(4)); }
+  if (sec.startsWith('tag:')) return tagsOf(d).includes(sec.slice(4));
+  return true;
+}
+function searchText(n) { const d = n.data, c = catOf(n); return [d.title, d.body, ...(d.items || []).map(i => i.t), c?.name, S.admin ? n.owner : ''].join(' ').toLowerCase(); }
+function visible() {
+  const q = S.q.trim().toLowerCase(), words = q.split(/\s+/).filter(Boolean);
+  const cmp = { upd: (a, b) => b.updated - a.updated, new: (a, b) => (b.data.created || 0) - (a.data.created || 0), old: (a, b) => (a.data.created || 0) - (b.data.created || 0), az: (a, b) => (a.data.title || '').localeCompare(b.data.title || '', 'id') }[S.sort] || ((a, b) => b.updated - a.updated);
+  return notes().filter(n => inSec(n, S.sec) && (!words.length || words.every(w => searchText(n).includes(w)))).sort(cmp);
+}
+const secName = sec => sec === 'all' ? 'Semua catatan' : sec === 'fav' ? 'Favorit' : sec === 'pin' ? 'Disematkan' : sec === 'arch' ? 'Arsip' : sec === 'trash' ? 'Sampah' : sec === 'nocat' ? 'Tanpa kategori'
+  : sec.startsWith('tag:') ? '#' + sec.slice(4) : (() => { const c = allCats().find(c => (S.admin ? c.name : c.id) === sec.slice(4)); return c ? catLabel(c) : 'Kategori'; })();
+
+// ---------- views ----------
+function render() {
+  const app = $('#app');
+  const ae = document.activeElement, focusId = ae && app.contains(ae) ? ae.id : null, sel = focusId && 'selectionStart' in ae ? [ae.selectionStart, ae.selectionEnd] : null;
+  const y = window.scrollY;
+  if (!S.user && !S.admin) { app.innerHTML = gateView(); syncMask(); setTimeout(() => ($('#pin-in') || $('#user-in'))?.focus(), 30); return; }
+  app.innerHTML = `<header class="top"><div class="top-in">
+      <div class="brand"><span class="logo">✎</span><span class="bname">Notes</span></div>
+      <label class="search"><span>🔍</span><input id="q" type="search" placeholder="Cari catatan…  ( / )" value="${esc(S.q)}" autocomplete="off"></label>
+      <div class="top-r"><span class="sync">${syncText()}</span><button class="chip" data-a="menu">${S.admin ? '🛡<span class="un"> Admin</span>' : '👤<span class="un"> ' + esc(S.user) + '</span>'} ▾</button></div>
+    </div></header>
+    <div class="wrap">${sideView()}<main>${S.sec === 'users' ? usersView() : listView()}</main></div>
+    ${RO() || S.sec === 'trash' || S.sec === 'users' ? '' : '<button class="fab" type="button" data-a="new" aria-label="Catatan baru">＋</button>'}`;
+  if (focusId) { const el = document.getElementById(focusId); if (el) { el.focus(); if (sel) try { el.setSelectionRange(...sel); } catch {} } }
+  window.scrollTo(0, y);
+}
+
+function sideView() {
+  const all = notes(), cnt = sec => all.filter(n => inSec(n, sec)).length;
+  const it = (sec, ic, label, n, extra = '') => `<button type="button" class="nav ${S.sec === sec ? 'on' : ''}" data-a="sec" data-v="${esc(sec)}"><span class="ic">${ic}</span><span class="lb">${esc(label)}</span>${n ? `<span class="n">${n}</span>` : ''}${extra}</button>`;
+  const cs = allCats(), tags = {};
+  for (const n of all) if (!n.data.trashed && !n.data.archived) for (const t of tagsOf(n.data)) tags[t] = (tags[t] || 0) + 1;
+  const tagList = Object.entries(tags).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 30);
+  return `<aside class="side">
+    ${S.admin ? `<select id="owner" class="owner"><option value="">Semua pengguna (${S.users.length})</option>${S.users.map(u => `<option value="${esc(u.owner)}"${S.owner === u.owner ? ' selected' : ''}>👤 ${esc(u.owner)}</option>`).join('')}</select>` : ''}
+    ${it('all', '🗒', 'Semua catatan', cnt('all'))}
+    ${it('fav', '⭐', 'Favorit', cnt('fav'))}
+    ${it('pin', '📌', 'Disematkan', cnt('pin'))}
+    <div class="side-h">Kategori${RO() ? '' : '<button type="button" class="mini" data-a="cats" title="Atur kategori">Atur</button>'}</div>
+    ${cs.map(c => it('cat:' + (S.admin ? c.name : c.id), c.icon || '🏷', c.name, cnt('cat:' + (S.admin ? c.name : c.id)))).join('')}
+    ${it('nocat', '◻️', 'Tanpa kategori', cnt('nocat'))}
+    ${tagList.length ? `<div class="side-h">Tag</div><div class="tags">${tagList.map(([t, n]) => `<button type="button" class="tagb ${S.sec === 'tag:' + t ? 'on' : ''}" data-a="sec" data-v="tag:${esc(t)}">#${esc(t)} <small>${n}</small></button>`).join('')}</div>` : ''}
+    <div class="side-h"></div>
+    ${it('arch', '🗄', 'Arsip', cnt('arch'))}
+    ${it('trash', '🗑', 'Sampah', cnt('trash'))}
+    ${S.admin ? it('users', '👥', 'Pengguna', S.users.length) : ''}
+  </aside>`;
+}
+
+function preview(n) {
+  const d = n.data;
+  if (d.type === 'list') {
+    const items = d.items || [], open = items.filter(i => !i.d), done = items.filter(i => i.d);
+    const show = [...open.slice(0, 8), ...(open.length < 8 ? done.slice(0, 8 - open.length) : [])];
+    return `<div class="cl">${show.map(i => { const ix = items.indexOf(i); return `<div class="cli ${i.d ? 'dn' : ''}">${RO() || d.trashed ? `<span class="cb">${i.d ? '☑' : '☐'}</span>` : `<button type="button" class="cb" data-a="ctog" data-k="${key(n)}" data-v="${ix}" aria-label="Centang">${i.d ? '☑' : '☐'}</button>`}<span>${esc(i.t)}</span></div>`; }).join('')}
+      ${items.length > show.length ? `<div class="muted small">+${items.length - show.length} lainnya</div>` : ''}${items.length ? `<div class="muted small">☑ ${done.length}/${items.length} selesai</div>` : ''}</div>`;
+  }
+  const b = (d.body || '').trim(); if (!b) return '';
+  const cut = b.length > 420 ? b.slice(0, 420) + '…' : b;
+  return `<div class="nb">${esc(cut).replace(/(^|\s)(#[\p{L}\p{N}_-]{2,30})/gu, '$1<span class="ht">$2</span>').replace(/https?:\/\/[^\s<]+/g, u => `<a href="${u}" target="_blank" rel="noopener">${u.length > 40 ? u.slice(0, 40) + '…' : u}</a>`)}</div>`;
+}
+function card(n) {
+  const d = n.data, c = catOf(n), col = COLORS[d.color] ? d.color : '';
+  const trash = !!d.trashed, act = !RO() && !trash;
+  return `<article class="ncard ${col ? 'col' : ''}" style="--nc:${COLORS[col][1]}" data-a="open" data-k="${key(n)}" tabindex="0">
+    <div class="nh"><h3>${esc(d.title || (d.type === 'list' ? 'Checklist' : '(tanpa judul)'))}</h3>
+      ${act ? `<button type="button" class="ib ${d.fav ? 'on' : ''}" data-a="fav" data-k="${key(n)}" title="${d.fav ? 'Hapus dari favorit' : 'Jadikan favorit'}">${d.fav ? '★' : '☆'}</button>` : d.fav ? '<span class="ib on">★</span>' : ''}</div>
+    ${preview(n)}
+    <div class="nf">${d.pinned ? '<span title="Disematkan">📌</span>' : ''}${S.admin ? `<span class="who">👤 ${esc(n.owner)}</span>` : ''}${c ? `<span class="cat">${esc(catLabel(c))}</span>` : ''}
+      <span class="muted">${trash ? `Dihapus ${ago(d.trashed)}` : ago(n.updated)}</span></div>
+  </article>`;
+}
+function listView() {
+  const list = visible(), pinned = S.sec === 'trash' ? [] : list.filter(n => n.data.pinned), rest = S.sec === 'trash' ? list : list.filter(n => !n.data.pinned);
+  const grid = arr => `<div class="grid ${S.layout}">${arr.map(card).join('')}</div>`;
+  const total = notes().filter(n => !n.data.trashed).length;
+  const empty = S.q ? `Tidak ada catatan yang cocok dengan “${esc(S.q)}”.` : S.sec === 'trash' ? 'Sampah kosong.' : S.sec === 'fav' ? 'Belum ada favorit. Ketuk ☆ di catatan untuk menandainya.' : S.sec === 'arch' ? 'Belum ada catatan yang diarsipkan.'
+    : !total ? (S.admin ? 'Belum ada catatan dari pengguna mana pun.' : 'Belum ada catatan. Tekan ＋ untuk menulis catatan pertama.') : 'Tidak ada catatan di sini.';
+  return `<div class="head"><div><h1>${esc(secName(S.sec))} <span class="hc">${list.length}</span></h1>
+      ${S.sec === 'trash' ? `<div class="muted small">Catatan di sampah terhapus permanen setelah ${TRASH_DAYS} hari.</div>` : ''}</div>
+    <div class="tools">${S.sec === 'trash' && list.length && !RO() ? '<button type="button" class="btn danger sm" data-a="emptytrash">Kosongkan sampah</button>' : ''}
+      <select id="sort" title="Urutkan">${Object.entries(SORTS).map(([k, l]) => `<option value="${k}"${S.sort === k ? ' selected' : ''}>${l}</option>`).join('')}</select>
+      <button type="button" class="btn sm" data-a="layout" title="Ganti tampilan">${S.layout === 'grid' ? '☰ Daftar' : '▦ Kotak'}</button>
+      ${RO() || S.sec === 'trash' ? '' : '<button type="button" class="btn primary sm hide-m" data-a="new">＋ Catatan baru</button>'}</div></div>
+    ${!RO() && S.sec !== 'trash' && S.sec !== 'arch' ? `<div class="quick" data-a="new">Tulis catatan…<span><button type="button" class="ib" data-a="newlist" title="Checklist baru">☑</button></span></div>` : ''}
+    ${!list.length ? `<p class="empty">${empty}</p>` : pinned.length ? `<div class="lbl">📌 Disematkan</div>${grid(pinned)}${rest.length ? `<div class="lbl">Lainnya</div>${grid(rest)}` : ''}` : grid(rest)}`;
+}
+
+function usersView() {
+  const rows = S.users.map(u => { const its = [...S.items.values()].filter(i => !i.deleted && i.kind === 'note' && i.owner === u.owner); return { u, n: its.filter(i => !i.data.trashed).length, fav: its.filter(i => i.data.fav && !i.data.trashed).length }; });
+  return `<div class="head"><div><h1>Pengguna <span class="hc">${S.users.length}</span></h1><div class="muted small">Akun sama dengan Planner. Klik untuk melihat catatannya.</div></div></div>
+    <div class="card" style="overflow-x:auto"><table class="users"><thead><tr><th>Pengguna</th><th class="num">Catatan</th><th class="num">Favorit</th><th>Terakhir aktif</th><th>PIN</th></tr></thead><tbody>
+    ${rows.map(r => `<tr class="click" data-a="seeuser" data-v="${esc(r.u.owner)}"><td><b>👤 ${esc(r.u.owner)}</b></td><td class="num">${r.n}</td><td class="num">${r.fav}</td><td class="muted">${r.u.last_seen ? fullDT(r.u.last_seen) : '—'}</td><td>${r.u.pin ? '🔒' : '<span class="muted">—</span>'}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Belum ada pengguna.</td></tr>'}
+    </tbody></table></div>`;
+}
+
+function gateView() {
+  if (S.gate) { const n = S.gate.name; return `<div class="gate"><form class="gate-card" id="gate-form" autocomplete="off">
+    <div class="logo">🔒</div><h1>Notes</h1><p class="gate-sub">👤 ${esc(n.slice(0, 4) + '*'.repeat(Math.max(0, n.length - 4)))}</p>
+    <label class="gate-field"><span>🔑</span><input id="pin-in" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="12" placeholder="PIN" autocomplete="off"></label>
+    <label class="check"><input type="checkbox" id="remember" checked> Tetap masuk di perangkat ini</label>
+    <button class="gate-btn" type="submit">Masuk</button>
+    <div class="gate-err" id="gate-err" role="alert">${esc(S.gate.msg || '')}</div>
+    <p class="gate-note"><a href="#" data-a="gateback" style="color:#fff">← Ganti nama pengguna</a></p>
+  </form></div>`; }
+  const adm = normUser($('#user-in')?.value) === ADMIN;
+  return `<div class="gate"><form class="gate-card" id="gate-form" autocomplete="off">
+    <div class="logo">✎</div><h1>Notes</h1><p class="gate-sub">Catatan sederhana, tersimpan di semua perangkat</p>
+    <label class="gate-field"><span>👤</span><span class="mask-wrap"><input id="user-in" name="user" type="text" placeholder="Nama pengguna" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="32" required value="${esc($('#user-in')?.value || '')}"><span id="user-mask" aria-hidden="true"></span></span></label>
+    <label class="gate-field" id="pass-row" style="${adm ? '' : 'display:none'}"><span>🔑</span><input id="pass-in" type="password" inputmode="numeric" placeholder="Password Admin" autocomplete="off"></label>
+    <label class="check"><input type="checkbox" id="remember" checked> Tetap masuk di perangkat ini</label>
+    <button class="gate-btn" type="submit">Masuk</button>
+    <div class="gate-err" id="gate-err" role="alert"></div>
+    <p class="gate-note">Setiap nama pengguna memiliki catatan sendiri. Nama & PIN sama dengan <a href="https://liemyo.github.io/planner/" style="color:#fff">Planner</a>. Nama yang belum pernah dipakai akan membuat akun baru.</p>
+  </form></div>`;
+}
+function syncMask() {
+  const i = $('#user-in'), m = $('#user-mask'); if (!i || !m) return;
+  const v = i.value; m.textContent = v.slice(0, 4) + '*'.repeat(Math.max(0, v.length - 4)); m.scrollLeft = i.scrollLeft;
+  const pr = $('#pass-row'); if (pr) pr.style.display = normUser(v) === ADMIN ? '' : 'none';
+}
+
+// ---------- editor ----------
+const dlg = () => $('#dlg');
+function openEditor(n, init) {
+  const d = n ? { ...n.data, items: (n.data.items || []).map(i => ({ ...i })) } : { ...newNote(init).data };
+  S.edit = { k: n ? key(n) : null, id: n ? n.id : uid(), d, dirty: false };
+  drawEditor(); dlg().showModal();
+  if (!n) (d.type === 'list' ? $('.cl-in') || $('#e-title') : $('#e-body'))?.focus();
+}
+function drawEditor() {
+  const E = S.edit, d = E.d, ro = RO() || !!d.trashed, dis = ro ? ' disabled' : '';
+  const n = E.k ? S.items.get(E.k) : null, cs = n ? cats(n.owner) : cats(), col = COLORS[d.color] ? d.color : '';
+  const words = ((d.title || '') + ' ' + (d.type === 'list' ? (d.items || []).map(i => i.t).join(' ') : d.body || '')).trim().split(/\s+/).filter(Boolean).length;
+  dlg().className = 'ed ' + (col ? 'col' : ''); dlg().style.setProperty('--nc', COLORS[col][1]);
+  dlg().innerHTML = `<div class="dlg ed-in">
+    <div class="ed-bar"><button type="button" class="ib" data-a="close" title="Tutup (Esc)">←</button><span class="sp"></span>
+      ${ro ? (d.trashed && !RO() ? '<button type="button" class="btn sm" data-a="restore">↩ Pulihkan</button><button type="button" class="btn danger sm" data-a="purge">Hapus permanen</button>' : `<span class="muted small">${RO() ? '👤 ' + esc(n?.owner || '') + ' · hanya lihat' : 'Di sampah'}</span>`)
+      : `<button type="button" class="ib ${d.fav ? 'on' : ''}" data-a="efav" title="Favorit">${d.fav ? '★' : '☆'}</button>
+        <button type="button" class="ib ${d.pinned ? 'on' : ''}" data-a="epin" title="${d.pinned ? 'Lepas sematan' : 'Sematkan di atas'}">📌</button>
+        <button type="button" class="ib ${d.archived ? 'on' : ''}" data-a="earch" title="${d.archived ? 'Keluarkan dari arsip' : 'Arsipkan'}">🗄</button>
+        <button type="button" class="ib" data-a="etrash" title="Pindahkan ke sampah">🗑</button>`}</div>
+    <input id="e-title" class="e-title" placeholder="Judul" maxlength="200" value="${esc(d.title)}"${dis}>
+    ${d.type === 'list' ? `<div class="cl-ed" id="cl-ed">${clRows(ro)}</div>` : `<textarea id="e-body" class="e-body" placeholder="Tulis catatan… (pakai #tag untuk menandai)" maxlength="100000"${dis}>${esc(d.body)}</textarea>`}
+    <div class="ed-opts">
+      <select id="e-cat" title="Kategori"${dis}><option value="">◻️ Tanpa kategori</option>${cs.map(c => `<option value="${esc(c.id)}"${d.cat === c.id ? ' selected' : ''}>${esc(catLabel(c))}</option>`).join('')}${ro ? '' : '<option value="__new">＋ Kategori baru…</option>'}</select>
+      <div class="swatch" role="radiogroup" aria-label="Warna">${Object.entries(COLORS).map(([k, [l, c]]) => `<label title="${l}"><input type="radio" name="e-color" value="${k}"${col === k ? ' checked' : ''}${dis}><span style="background:${k ? c : 'var(--card)'}">${k ? '' : '⃠'}</span></label>`).join('')}</div>
+      ${ro ? '' : `<button type="button" class="btn sm" data-a="etype">${d.type === 'list' ? '¶ Jadikan teks' : '☑ Jadikan checklist'}</button>`}
+    </div>
+    <div class="ed-foot"><span class="muted small" id="e-info">${n ? 'Diubah ' + fullDT(n.updated) + ' · ' : ''}${words} kata${n ? ' · dibuat ' + fullDT(d.created || n.updated) : ''}</span><span class="sp"></span>
+      <button type="button" class="btn sm" data-a="copy">⧉ Salin</button>${navigator.share ? '<button type="button" class="btn sm" data-a="share">↗ Bagikan</button>' : ''}<button type="button" class="btn sm" data-a="dltxt">⬇ .txt</button></div>
+  </div>`;
+}
+function clRows(ro) {
+  const items = S.edit.d.items || [];
+  const row = (i, ix) => `<div class="cl-row ${i.d ? 'dn' : ''}"><input type="checkbox" data-ci="${ix}"${i.d ? ' checked' : ''}${ro ? ' disabled' : ''}><input type="text" class="cl-in" data-ct="${ix}" value="${esc(i.t)}" maxlength="500"${ro ? ' disabled' : ''}>${ro ? '' : `<button type="button" class="x" data-a="cdel" data-v="${ix}" aria-label="Hapus">×</button>`}</div>`;
+  const open = items.map((i, ix) => [i, ix]).filter(([i]) => !i.d), done = items.map((i, ix) => [i, ix]).filter(([i]) => i.d);
+  return open.map(([i, ix]) => row(i, ix)).join('') + (ro ? '' : '<div class="cl-row add"><span>＋</span><input type="text" id="cl-new" placeholder="Tambah item… (Enter)" maxlength="500"></div>')
+    + (done.length ? `<div class="muted small cl-done">☑ ${done.length} selesai</div>` + done.map(([i, ix]) => row(i, ix)).join('') : '');
+}
+let saveT = null;
+function editChanged(redraw) { S.edit.dirty = true; clearTimeout(saveT); saveT = setTimeout(flushEdit, 500); if (redraw) { const f = document.activeElement?.id; drawEditor(); if (f) $('#' + f)?.focus(); } }
+function flushEdit() {
+  clearTimeout(saveT); const E = S.edit; if (!E || !E.dirty || RO()) return; E.dirty = false;
+  const d = { ...E.d, items: (E.d.items || []).filter(i => i.t.trim() || i.d) };
+  const old = E.k ? S.items.get(E.k) : null;
+  if (!old && !d.title.trim() && !d.body.trim() && !d.items.length) return; // empty new note: nothing to save
+  const it = old ? { ...old, data: d } : { id: E.id, owner: S.user, kind: 'note', data: d, updated: 0, deleted: false };
+  put(it, true); E.k = key(it); render();
+  const info = $('#e-info'); if (info) info.textContent = 'Tersimpan ' + hms(new Date()) + ' ✓';
+}
+const noteText = d => (d.title ? d.title + '\n\n' : '') + (d.type === 'list' ? (d.items || []).map(i => (i.d ? '☑ ' : '☐ ') + i.t).join('\n') : d.body || '');
+
+function openCats() {
+  const list = cats().map(c => ({ ...c }));
+  S.catEdit = list;
+  const draw = () => {
+    dlg().className = ''; dlg().style.removeProperty('--nc');
+    dlg().innerHTML = `<div class="dlg"><h2>Atur kategori</h2><p class="muted small" style="margin:0">Ikon boleh emoji. Menghapus kategori tidak menghapus catatannya — catatan menjadi “Tanpa kategori”.</p>
+      <div class="cats">${S.catEdit.map((c, i) => `<div class="catrow"><input class="ci" data-cf="icon" data-v="${i}" value="${esc(c.icon || '')}" maxlength="4" placeholder="🏷"><input data-cf="name" data-v="${i}" value="${esc(c.name)}" maxlength="40" placeholder="Nama kategori">
+        <button type="button" class="ib" data-a="catup" data-v="${i}" title="Naik"${i ? '' : ' disabled'}>↑</button><button type="button" class="x" data-a="catdel" data-v="${i}" aria-label="Hapus">×</button></div>`).join('')}</div>
+      <button type="button" class="btn" data-a="catadd">＋ Tambah kategori</button>
+      <div class="dlg-f"><button type="button" class="btn" data-a="close">Batal</button><button type="button" class="btn primary" data-a="catsave">Simpan</button></div></div>`;
+  };
+  S.catDraw = draw; draw(); if (!dlg().open) dlg().showModal();
+}
+function newCatPrompt() {
+  const name = (prompt('Nama kategori baru:') || '').trim().slice(0, 40); if (!name) return null;
+  const exist = cats().find(c => c.name.toLowerCase() === name.toLowerCase()); if (exist) return exist.id;
+  const c = { id: 'c' + uid().slice(0, 8), name, icon: '🏷' }; saveCats([...cats(), c]); return c.id;
+}
+
+function openMenu() {
+  S.edit = null; dlg().className = ''; dlg().style.removeProperty('--nc');
+  const theme = LS.get('theme') || 'auto';
+  dlg().innerHTML = `<div class="dlg"><h2>${S.admin ? '🛡 Admin' : '👤 ' + esc(S.user)}</h2>
+    <p class="muted small" style="margin:0">${syncText()} · versi ${BUILD}</p>
+    <div class="fld"><span>Tampilan</span><div class="seg">${[['auto', 'Otomatis'], ['light', 'Terang'], ['dark', 'Gelap']].map(([v, l]) => `<label><input type="radio" name="theme" value="${v}"${theme === v ? ' checked' : ''}><span>${l}</span></label>`).join('')}</div></div>
+    ${S.admin ? '<p class="muted small" style="margin:0">Mode Admin hanya melihat catatan semua pengguna, diperbarui real time.</p>' : `
+    <div class="fld"><span>🔒 PIN masuk</span><p class="small" style="margin:0">${S.hasPin ? '✓ PIN aktif — diminta setiap kali masuk.' : 'Belum ada PIN. Pasang PIN agar catatan tidak bisa dibuka hanya dengan nama pengguna.'} PIN ini sama dengan PIN Planner.</p>
+      ${S.hasPin ? '<input type="password" id="pin-old" inputmode="numeric" maxlength="12" placeholder="PIN saat ini" autocomplete="off">' : ''}
+      <div class="two"><input type="password" id="pin-new" inputmode="numeric" maxlength="12" placeholder="PIN baru (4–12 angka)" autocomplete="new-password"><input type="password" id="pin-new2" inputmode="numeric" maxlength="12" placeholder="Ulangi PIN baru" autocomplete="new-password"></div>
+      <div class="dlg-f" style="justify-content:flex-start"><button type="button" class="btn primary" data-a="pinsave">${S.hasPin ? 'Ubah PIN' : 'Pasang PIN'}</button>${S.hasPin ? '<button type="button" class="btn danger" data-a="pinoff">Hapus PIN</button>' : ''}<span class="small" id="pin-msg" style="align-self:center;color:var(--red)"></span></div></div>
+    <div class="fld"><span>Cadangan</span><div class="seg"><button type="button" class="btn" data-a="export">⬇ Ekspor JSON</button><label class="btn" style="text-align:center">⬆ Impor JSON<input type="file" id="imp" accept="application/json,.json" hidden></label></div></div>`}
+    <div class="dlg-f"><button type="button" class="btn danger" data-a="logout">Keluar</button><span class="sp"></span><button type="button" class="btn primary" data-a="close">Tutup</button></div></div>`;
+  if (!dlg().open) dlg().showModal();
+}
+async function pinChange(old, nw, out) {
+  out.textContent = 'Menyimpan…';
+  try {
+    const r = await rpc('pl_pin_set', { p_owner: S.user, p_old: old || S.pin || null, p_new: nw || null });
+    if (!r?.ok) { out.textContent = r?.pin === 'wrong' || r?.pin === 'need' ? 'PIN saat ini salah.' : PIN_MSG[r?.pin] || 'Gagal.'; return; }
+    S.pin = nw; S.hasPin = !!nw;
+    if (nw) { SS.set('pin.' + S.user, nw); LS.set('u.' + S.user + '.haspin', '1'); LS.set('u.' + S.user + '.pinhash', await pinHash(S.user, nw)); }
+    else { SS.del('pin.' + S.user); LS.del('u.' + S.user + '.haspin'); LS.del('u.' + S.user + '.pinhash'); }
+    openMenu(); toast(nw ? 'PIN tersimpan ✓ — berlaku juga di Planner' : 'PIN dihapus.');
+  } catch (e) { out.textContent = 'Tidak bisa menghubungi server (' + e.message + ').'; }
+}
+
+let toastT = null;
+function toast(msg, undo) {
+  let t = $('.toast'); if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
+  t.innerHTML = esc(msg) + (undo ? ' <button type="button" data-a="undo">Urungkan</button>' : ''); S.undo = undo || null; t.hidden = false;
+  clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; S.undo = null; }, undo ? 5000 : 2500);
+}
+function applyTheme() { const t = LS.get('theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; }
+function moveNote(k, patch, msg) { const n = S.items.get(k); if (!n || RO()) return; const before = { ...n.data }; setData(k, patch); toast(msg, () => setData(k, before)); }
+function download(name, text, type) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
+const fileName = d => (d.title || 'catatan').replace(/[^\p{L}\p{N} _-]+/gu, '').trim().slice(0, 50) || 'catatan';
+
+// ---------- events ----------
+const A = {
+  sec: el => { S.sec = el.dataset.v; LS.set('sec', S.sec); window.scrollTo(0, 0); render(); },
+  menu: () => openMenu(),
+  close: () => dlg().close(),
+  logout: () => logout(),
+  new: () => openEditor(null, S.sec.startsWith('cat:') && !S.admin ? { cat: S.sec.slice(4) } : S.sec === 'fav' ? { fav: true } : S.sec === 'pin' ? { pinned: true } : S.sec.startsWith('tag:') ? { body: '\n\n#' + S.sec.slice(4) } : {}),
+  newlist: () => openEditor(null, { type: 'list', ...(S.sec.startsWith('cat:') && !S.admin ? { cat: S.sec.slice(4) } : {}) }),
+  open: el => { const n = S.items.get(el.dataset.k); if (n) openEditor(n); },
+  fav: el => { const n = S.items.get(el.dataset.k); if (n) { setData(el.dataset.k, { fav: !n.data.fav }); toast(n.data.fav ? 'Dihapus dari favorit' : 'Ditambahkan ke favorit ⭐'); } },
+  ctog: el => { const n = S.items.get(el.dataset.k); if (!n) return; const items = (n.data.items || []).map(i => ({ ...i })), i = items[Number(el.dataset.v)]; if (i) { i.d = !i.d; setData(el.dataset.k, { items }); } },
+  layout: () => { S.layout = S.layout === 'grid' ? 'list' : 'grid'; LS.set('layout', S.layout); render(); },
+  emptytrash: () => { const list = notes().filter(n => n.data.trashed); if (!list.length || !confirm(`Hapus permanen ${list.length} catatan di sampah?`)) return; for (const n of list) put({ ...n, deleted: true, data: {} }, true); render(); toast('Sampah dikosongkan.'); },
+  efav: () => { S.edit.d.fav = !S.edit.d.fav; editChanged(true); },
+  epin: () => { S.edit.d.pinned = !S.edit.d.pinned; editChanged(true); },
+  earch: () => { const a = !S.edit.d.archived; S.edit.d.archived = a; if (a) S.edit.d.pinned = false; S.edit.dirty = true; flushEdit(); const k = S.edit.k; dlg().close(); if (k) toast(a ? 'Diarsipkan 🗄' : 'Dikeluarkan dari arsip', () => setData(k, { archived: !a })); },
+  etrash: () => { flushEdit(); const k = S.edit.k; dlg().close(); if (k) moveNote(k, { trashed: Date.now(), pinned: false }, 'Dipindahkan ke sampah 🗑'); },
+  restore: () => { const k = S.edit.k; dlg().close(); setData(k, { trashed: null }); toast('Catatan dipulihkan ↩'); },
+  purge: () => { const n = S.items.get(S.edit.k); if (!n || !confirm('Hapus permanen catatan ini? Tidak bisa dikembalikan.')) return; dlg().close(); put({ ...n, deleted: true, data: {} }); toast('Dihapus permanen.'); },
+  etype: () => {
+    const d = S.edit.d;
+    if (d.type === 'list') { d.body = (d.items || []).map(i => (i.d ? '✓ ' : '') + i.t).join('\n'); d.items = []; d.type = 'text'; }
+    else { d.items = (d.body || '').split('\n').map(t => t.replace(/^\s*([-*•]|\d+[.)]|☐|☑|✓|\[ ?x?\])\s*/i, '').trim()).filter(Boolean).map(t => ({ t, d: false })); d.body = ''; d.type = 'list'; }
+    editChanged(true);
+  },
+  cdel: el => { S.edit.d.items.splice(Number(el.dataset.v), 1); editChanged(true); },
+  copy: async () => { try { await navigator.clipboard.writeText(noteText(S.edit.d)); toast('Disalin ke clipboard ⧉'); } catch { toast('Tidak bisa menyalin.'); } },
+  share: async () => { try { await navigator.share({ title: S.edit.d.title || 'Catatan', text: noteText(S.edit.d) }); } catch {} },
+  dltxt: () => download(fileName(S.edit.d) + '.txt', noteText(S.edit.d), 'text/plain;charset=utf-8'),
+  undo: () => { const u = S.undo; S.undo = null; const t = $('.toast'); if (t) t.hidden = true; if (u) u(); },
+  cats: () => openCats(),
+  catadd: () => { S.catEdit.push({ id: 'c' + uid().slice(0, 8), name: '', icon: '🏷' }); S.catDraw(); document.querySelectorAll('[data-cf=name]')[S.catEdit.length - 1]?.focus(); },
+  catdel: el => { S.catEdit.splice(Number(el.dataset.v), 1); S.catDraw(); },
+  catup: el => { const i = Number(el.dataset.v); if (i > 0) { [S.catEdit[i - 1], S.catEdit[i]] = [S.catEdit[i], S.catEdit[i - 1]]; S.catDraw(); } },
+  catsave: () => {
+    const list = S.catEdit.map(c => ({ ...c, name: c.name.trim() })).filter(c => c.name);
+    saveCats(list); if (S.sec.startsWith('cat:') && !list.some(c => 'cat:' + c.id === S.sec)) S.sec = 'all';
+    dlg().close(); toast('Kategori tersimpan ✓');
+  },
+  gateback: () => { S.gate = null; LS.del('session'); render(); },
+  pinsave: async () => {
+    const old = $('#pin-old')?.value || '', a = $('#pin-new').value, b = $('#pin-new2').value, out = $('#pin-msg');
+    if (!/^\d{4,12}$/.test(a)) { out.textContent = PIN_MSG.format; return; } if (a !== b) { out.textContent = 'Ulangi PIN tidak sama.'; return; }
+    await pinChange(old, a, out);
+  },
+  pinoff: async () => { const old = $('#pin-old').value, out = $('#pin-msg'); if (!old) { out.textContent = 'Isi PIN saat ini untuk menghapus PIN.'; return; } if (!confirm('Hapus PIN? Siapa pun yang tahu nama pengguna ini bisa membuka catatan dan planner-nya.')) return; await pinChange(old, '', out); },
+  seeuser: el => { S.owner = el.dataset.v; S.sec = 'all'; render(); },
+  export: () => download(`Notes-${S.user}-${ymd(new Date())}.json`, JSON.stringify({ app: 'Notes', user: S.user, exported: new Date().toISOString(), items: [...S.items.values()].filter(i => !i.deleted) }, null, 1), 'application/json')
+};
+document.addEventListener('click', ev => {
+  if (ev.target.closest('a[href]:not([data-a])')) return; // links inside notes
+  const el = ev.target.closest('[data-a]'); if (!el || !A[el.dataset.a]) return;
+  ev.preventDefault(); ev.stopPropagation(); A[el.dataset.a](el);
+});
+document.addEventListener('input', ev => {
+  const t = ev.target;
+  if (t.id === 'user-in') return syncMask();
+  if (t.id === 'q') { S.q = t.value; render(); return; }
+  if (S.catEdit && t.dataset.cf) { S.catEdit[Number(t.dataset.v)][t.dataset.cf] = t.value; return; }
+  if (!S.edit) return;
+  if (t.id === 'e-title') { S.edit.d.title = t.value; editChanged(); }
+  if (t.id === 'e-body') { S.edit.d.body = t.value; editChanged(); }
+  if (t.dataset.ct !== undefined) { S.edit.d.items[Number(t.dataset.ct)].t = t.value; editChanged(); }
+});
+document.addEventListener('change', ev => {
+  const t = ev.target;
+  if (t.id === 'sort') { S.sort = t.value; LS.set('sort', S.sort); render(); }
+  if (t.id === 'owner') { S.owner = t.value; render(); }
+  if (t.name === 'theme') { t.value === 'auto' ? LS.del('theme') : LS.set('theme', t.value); applyTheme(); }
+  if (S.edit) {
+    if (t.id === 'e-cat') { if (t.value === '__new') { const id = newCatPrompt(); S.edit.d.cat = id || S.edit.d.cat; editChanged(true); } else { S.edit.d.cat = t.value; editChanged(); } }
+    if (t.name === 'e-color') { S.edit.d.color = t.value; editChanged(true); }
+    if (t.dataset.ci !== undefined) { S.edit.d.items[Number(t.dataset.ci)].d = t.checked; editChanged(true); }
+  }
+  if (t.id === 'imp' && t.files[0]) t.files[0].text().then(txt => {
+    const o = JSON.parse(txt); const list = (o.items || []).filter(i => i && (i.kind === 'note' || i.kind === 'meta') && i.data);
+    if (!list.length) throw new Error('kosong');
+    for (const i of list) { const id = /^[A-Za-z0-9_-]{6,64}$/.test(i.id) ? i.id : uid(), cur = S.items.get(S.user + '/' + id); const it = { id, owner: S.user, kind: i.kind, data: i.data, updated: Math.max(Date.now(), (cur?.updated || 0) + 1), deleted: false }; S.items.set(key(it), it); S.queue.add(key(it)); }
+    saveCache(); dlg().close(); render(); pushSoon(); toast(`${list.length} item diimpor ✓`);
+  }).catch(() => alert('File tidak bisa dibaca sebagai cadangan Notes.'));
+});
+document.addEventListener('keydown', ev => {
+  const t = ev.target;
+  if (ev.key === 'Enter' && t.id === 'cl-new') { ev.preventDefault(); const v = t.value.trim(); if (!v) return; S.edit.d.items.push({ t: v, d: false }); editChanged(true); $('#cl-new')?.focus(); return; }
+  if (ev.key === 'Enter' && t.dataset?.ct !== undefined) { ev.preventDefault(); $('#cl-new')?.focus(); return; }
+  if (ev.key === 'Backspace' && t.dataset?.ct !== undefined && !t.value) { ev.preventDefault(); S.edit.d.items.splice(Number(t.dataset.ct), 1); editChanged(true); $('#cl-new')?.focus(); return; }
+  if (ev.key === 'Enter' && t.id === 'e-title' && S.edit) { ev.preventDefault(); ($('#e-body') || $('#cl-new'))?.focus(); return; }
+  if (ev.key === 'Enter' && t.classList?.contains('ncard')) { A.open(t); return; }
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || dlg().open;
+  if (!typing && (S.user || S.admin) && !ev.metaKey && !ev.ctrlKey && !ev.altKey) {
+    if (ev.key === '/') { ev.preventDefault(); $('#q')?.focus(); }
+    else if ((ev.key === 'n' || ev.key === 'N') && !RO()) { ev.preventDefault(); A.new(); }
+  }
+});
+document.addEventListener('submit', ev => {
+  const f = ev.target; ev.preventDefault();
+  if (f.id === 'gate-form') {
+    const btn = f.querySelector('button'); btn.disabled = true; btn.textContent = 'Membuka…';
+    const pinMode = !!S.gate, name = pinMode ? S.gate.name : $('#user-in').value, pin = pinMode ? $('#pin-in').value : '';
+    if (pinMode && !pin) { btn.disabled = false; btn.textContent = 'Masuk'; $('#gate-err').textContent = PIN_MSG.need; return; }
+    login(name, pinMode ? '' : $('#pass-in').value, $('#remember').checked, pin).then(render, e => {
+      if (e.needPin && !pinMode) { S.gate = { name: normUser(name), msg: '' }; render(); return; }
+      btn.disabled = false; btn.textContent = 'Masuk'; $('#gate-err').textContent = e.message; const pi = $('#pin-in'); if (pi) { pi.value = ''; pi.focus(); } });
+  }
+});
+dlg().addEventListener('close', () => { if (S.edit) flushEdit(); S.edit = null; S.catEdit = null; dlg().className = ''; render(); });
+dlg().addEventListener('click', ev => { if (ev.target === dlg()) dlg().close(); }); // click on backdrop
+
+// ---------- auto update + boot ----------
+async function checkUpdate() { // phones keep old copies; load the newer build when nothing is being edited
+  if (dlg().open || S.queue.size) return;
+  try {
+    const r = await fetch(location.pathname + '?_=' + Date.now(), { cache: 'no-store' }); const m = /const BUILD = '([^']+)'/.exec(await r.text());
+    if (m && m[1] !== BUILD && m[1] !== '__BUILD__' && SS.get('reloaded') !== m[1]) { SS.set('reloaded', m[1]); location.replace(location.pathname + '?v=' + m[1]); }
+  } catch {}
+}
+setInterval(() => { if (!document.hidden && !S.edit?.dirty) syncNow(); }, 10000);
+setInterval(checkUpdate, 10 * 60e3);
+setInterval(() => { if ((S.user || S.admin) && !dlg().open && !document.activeElement?.id) render(); }, 60000); // refresh "x mnt lalu"
+document.addEventListener('visibilitychange', () => { if (document.hidden) { if (S.edit) flushEdit(); } else syncNow(); });
+window.addEventListener('pagehide', () => { if (S.edit) flushEdit(); });
+window.addEventListener('online', () => syncNow());
+window.addEventListener('focus', () => syncNow());
+
+function boot() {
+  applyTheme(); checkUpdate();
+  let s = null; try { s = JSON.parse(LS.get('session') || 'null'); } catch {}
+  const ssUser = SS.get('user'), ssAdmin = SS.get('admin');
+  if (s?.admin || ssAdmin) {
+    if (ssAdmin) { S.admin = true; S.pass = ssAdmin; loadCache(); render(); liveStart(); syncNow(); return; }
+    LS.del('session'); // admin password is never stored on the device; ask again
+  } else if (s?.user || ssUser) {
+    const name = s?.user || ssUser, pin = SS.get('pin.' + name) || '';
+    if (LS.get('u.' + name + '.haspin') && !pin) { S.gate = { name, msg: '' }; render(); return; } // PIN asked on every new visit
+    S.user = name; S.pin = pin; S.hasPin = !!LS.get('u.' + name + '.haspin'); loadCache();
+    if (S.sec === 'users') S.sec = 'all';
+    render(); liveStart(); syncNow(); return;
+  }
+  render();
+}
+boot();
+</script>
+</body>
+</html>
