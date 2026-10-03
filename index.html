@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<script>/* phones + small tablets: whole app at 80% (layout widens to fill the screen); max-scale stops iOS zooming into inputs */
-if (Math.min(screen.width, screen.height) <= 820) document.querySelector('meta[name=viewport]').content = 'width=device-width, initial-scale=0.8, minimum-scale=0.8, maximum-scale=0.8, viewport-fit=cover';</script>
+<script>/* phones + small tablets: whole app at 88% (layout widens to fill the screen); max-scale stops iOS zooming into inputs */
+if (Math.min(screen.width, screen.height) <= 820) document.querySelector('meta[name=viewport]').content = 'width=device-width, initial-scale=0.88, minimum-scale=0.88, maximum-scale=0.88, viewport-fit=cover';</script>
 <title>Notes</title>
 <meta name="description" content="Notes: catatan sederhana dengan favorit, kategori, tag, checklist, arsip dan sampah — sinkron real time di HP dan laptop.">
 <meta name="theme-color" content="#d98a00">
@@ -125,6 +125,16 @@ dialog.ed.col{background:color-mix(in srgb,var(--nc) var(--na),var(--card))}
 .rc input{position:absolute;left:4px;right:4px;bottom:1px;width:auto;height:5px;padding:0;border:0;border-radius:2px;opacity:1;cursor:pointer;-webkit-appearance:none;appearance:none}
 .rc input::-webkit-color-swatch-wrapper{padding:0}.rc input::-webkit-color-swatch{border:0;border-radius:2px}
 .rc span{margin-top:-4px;font-weight:700}
+.rb.on{background:color-mix(in srgb,var(--acc) 22%,transparent)}
+.ed-bar .hb{font-size:20px;color:var(--text)}
+.tbl-menu{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start;padding:10px;border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--card) 85%,transparent)}
+.tbl-new{display:flex;flex-direction:column;gap:6px}
+.tbl-grid{display:grid;grid-template-columns:repeat(var(--c),20px);gap:3px}
+.tbl-grid button{width:20px;height:20px;border:1px solid var(--line);border-radius:4px;background:var(--card);padding:0;cursor:pointer}
+.tbl-grid button.on,.tbl-grid button:hover{background:color-mix(in srgb,var(--acc) 45%,transparent);border-color:var(--acc)}
+.tbl-ops{display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start;flex:1;min-width:220px}
+.tbl-ops>span{flex-basis:100%}
+.tbl-ops .btn{background:color-mix(in srgb,var(--card) 70%,transparent)}
 .ed-find{display:flex;align-items:center;gap:4px;padding:4px 6px;border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--card) 80%,transparent)}
 .ed-find input{flex:1;border:0;background:none;padding:6px 4px;outline:0!important}
 .ed-find #f-n{min-width:4.5em;text-align:right;white-space:nowrap}
@@ -242,6 +252,8 @@ dialog.ed.col{background:color-mix(in srgb,var(--nc) var(--na),var(--card))}
   .ed-foot .sp{display:none}
   .ed-foot .btn{padding:8px 4px}
   .ed-bar{justify-content:space-between}
+  .tbl-menu{flex-direction:column;gap:10px}.tbl-grid{grid-template-columns:repeat(var(--c),1fr);width:100%}.tbl-grid button{width:auto;height:22px}.tbl-new{width:100%}
+  .tbl-ops{min-width:0;width:100%;display:grid;grid-template-columns:1fr 1fr}.tbl-ops>span,.tbl-ops [data-v=del]{grid-column:1/-1}.tbl-ops .btn{width:100%}
   .toast{bottom:90px}
 }
 </style>
@@ -251,7 +263,7 @@ dialog.ed.col{background:color-mix(in srgb,var(--nc) var(--na),var(--card))}
 <dialog id="dlg"></dialog>
 <noscript>Notes memerlukan JavaScript.</noscript>
 <script>// Notes — catatan dengan favorit, kategori, tag, checklist, arsip & sampah. Akun (nama pengguna + PIN) sama dengan Planner; data di Supabase (proyek saku-yuk), sinkron real time.
-const BUILD = '20261003-212426';
+const BUILD = '20261003-214615';
 const SB_URL = 'https://bbptcxpzzvgpxqylkrmw.supabase.co', SB_KEY = 'sb_publishable_Ny-WHCEZ3WmcLFsPBx9QeQ_9xgo7MxR'; // public key; tables closed, only nt_*/pl_* functions
 const ADMIN = 'admin';
 
@@ -605,6 +617,7 @@ const dlg = () => $('#dlg');
 function openEditor(n, init) {
   const d = n ? { ...n.data, items: (n.data.items || []).map(i => ({ ...i })) } : { ...newNote(init).data };
   S.edit = { k: n ? key(n) : null, id: n ? n.id : uid(), d, dirty: false };
+  S.edit.hist = [snapEdit()]; S.edit.hi = 0;
   drawEditor(); dlg().showModal();
   if (!n) (d.type === 'list' ? $('.cl-in') || $('#e-title') : $('#e-body'))?.focus();
 }
@@ -615,7 +628,7 @@ function drawEditor() {
   const words = ((d.title || '') + ' ' + (d.type === 'list' ? (d.items || []).map(i => i.t).join(' ') : d.body || '')).trim().split(/\s+/).filter(Boolean).length;
   dlg().className = 'ed ' + (col ? 'col' : ''); dlg().style.setProperty('--nc', COLORS[col][1]);
   dlg().innerHTML = `<div class="dlg ed-in">
-    <div class="ed-bar"><button type="button" class="ib" data-a="close" title="Tutup (Esc)">←</button><span class="sp"></span>
+    <div class="ed-bar"><button type="button" class="ib" data-a="close" title="Tutup (Esc)">←</button>${ro ? '' : `<button type="button" class="ib hb" data-a="undo-e" title="Undo (⌘Z / Ctrl+Z)"${E.hi > 0 ? '' : ' disabled'}>↶</button><button type="button" class="ib hb" data-a="redo-e" title="Redo (⇧⌘Z / Ctrl+Y)"${E.hi < (E.hist?.length || 1) - 1 ? '' : ' disabled'}>↷</button>`}<span class="sp"></span>
       <button type="button" class="ib ${E.f ? 'on' : ''}" data-a="find" title="Cari teks di catatan (⌘F / Ctrl+F)">🔍</button>
       ${ro ? (d.trashed && !RO() ? '<button type="button" class="btn sm" data-a="restore">↩ Pulihkan</button><button type="button" class="btn danger sm" data-a="purge">Hapus permanen</button>' : `<span class="muted small">${RO() ? '👤 ' + esc(n?.owner || '') + ' · hanya lihat' : 'Di sampah'}</span>`)
       : `<button type="button" class="ib ${d.fav ? 'on' : ''}" data-a="efav" title="Favorit">${d.fav ? '★' : '☆'}</button>
@@ -674,7 +687,7 @@ function rtBar() {
     <span class="rt-g"><label class="rb rc" title="Warna teks"><span>A</span><input type="color" id="t-fc" value="#e03131"></label><label class="rb rc" title="Warna stabilo / latar teks"><span>🖍</span><input type="color" id="t-bc" value="#ffe066"></label></span>
     <span class="rt-g">${b('fmt', '≡', 'Rata kiri', 'justifyLeft')}${b('fmt', '☰', 'Rata tengah', 'justifyCenter')}${b('fmt', '⫶≡', 'Rata kanan', 'justifyRight')}${b('fmt', '▤', 'Rata kiri-kanan', 'justifyFull')}</span>
     <span class="rt-g">${b('fmt', '•≡', 'Daftar berpoin', 'insertUnorderedList')}${b('fmt', '1.', 'Daftar bernomor', 'insertOrderedList')}</span>
-    <select id="t-tbl" title="Tabel"><option value="">⊞ Tabel</option><option value="new">Sisipkan tabel…</option><option value="row">＋ Baris di bawah</option><option value="col">＋ Kolom di kanan</option><option value="merge">⇔ Gabung sel (ke kanan / yang dipilih)</option><option value="split">⇹ Pisah sel</option><option value="delrow">− Hapus baris</option><option value="delcol">− Hapus kolom</option><option value="del">🗑 Hapus tabel</option></select>
+    <button type="button" class="rb tb" data-a="tblmenu" title="Tabel">⊞ Tabel ▾</button>
     <label class="rb" title="Sisipkan gambar">🖼<input type="file" id="t-img" accept="image/*" multiple hidden></label>
     ${b('fmt', '⌫A', 'Hapus format', 'removeFormat')}
   </div>`;
@@ -687,7 +700,7 @@ function rtFocus() { // put the caret back where it was before a toolbar control
   return el;
 }
 function rtCmd(cmd, val) {
-  if (!rtFocus()) return;
+  if (!rtFocus()) return; histPush();
   document.execCommand('styleWithCSS', false, true);
   if (cmd === 'fontSize') { // execCommand only knows sizes 1–7 → mark with 7, then swap to real px
     document.execCommand('styleWithCSS', false, false); document.execCommand('fontSize', false, '7');
@@ -697,16 +710,24 @@ function rtCmd(cmd, val) {
   } else document.execCommand(cmd, false, val ?? null);
   rtChanged();
 }
+const TBL_R = 6, TBL_C = 8;
+const tblMenu = () => `<div class="tbl-menu"><div class="tbl-new"><div class="tbl-grid" style="--c:${TBL_C}">${Array.from({ length: TBL_R * TBL_C }, (_, i) => `<button type="button" data-a="tblnew" data-v="${Math.floor(i / TBL_C) + 1}x${i % TBL_C + 1}" aria-label="Tabel ${Math.floor(i / TBL_C) + 1} x ${i % TBL_C + 1}"></button>`).join('')}</div><span class="muted small" id="tbl-sz">Pilih ukuran tabel</span></div>
+  <div class="tbl-ops"><span class="muted small">Taruh kursor di sel, lalu:</span>${[['row', '＋ Baris'], ['col', '＋ Kolom'], ['merge', '⇔ Gabung sel'], ['split', '✂ Pisah sel'], ['delrow', '− Baris'], ['delcol', '− Kolom'], ['del', '🗑 Hapus tabel']].map(([v, l]) => `<button type="button" class="btn sm" data-a="tblop" data-v="${v}">${l}</button>`).join('')}</div></div>`;
+function toggleTblMenu(force) {
+  const m = $('.tbl-menu'), open = force ?? !m;
+  if (m && !open) m.remove(); else if (!m && open) $('.rt-bar')?.insertAdjacentHTML('afterend', tblMenu());
+  $('[data-a=tblmenu]')?.classList.toggle('on', open);
+}
 function rtTable(op) {
   const el = rtFocus(); if (!el) return;
-  if (op === 'new') {
-    const m = /^\s*(\d{1,2})\s*[x×*,\s]\s*(\d{1,2})\s*$/i.exec(prompt('Ukuran tabel — baris x kolom:', '3x3') || ''); if (!m) return;
-    const r = Math.min(+m[1], 50), c = Math.min(+m[2], 12); if (!r || !c) return;
-    rtFocus(); document.execCommand('insertHTML', false, `<table><tbody>${Array.from({ length: r }, (_, i) => `<tr>${(i ? '<td><br></td>' : '<th><br></th>').repeat(c)}</tr>`).join('')}</tbody></table><div><br></div>`);
-    return rtChanged();
+  histPush();
+  if (/^\d+x\d+$/.test(op)) {
+    const [r, c] = op.split('x').map(Number);
+    document.execCommand('insertHTML', false, `<table><tbody>${Array.from({ length: r }, (_, i) => `<tr>${(i ? '<td><br></td>' : '<th><br></th>').repeat(c)}</tr>`).join('')}</tbody></table><div><br></div>`);
+    toggleTblMenu(false); return rtChanged();
   }
   const node = getSelection().anchorNode, cell = (node?.nodeType === 1 ? node : node?.parentElement)?.closest('td,th');
-  if (!cell || !el.contains(cell)) { toast('Taruh kursor di dalam tabel dulu.'); return; }
+  if (!cell || !el.contains(cell)) { toast('Klik dulu salah satu sel tabel, lalu pilih perintahnya.'); return; }
   const tr = cell.parentElement, table = cell.closest('table'), ci = cell.cellIndex, rows = [...table.rows];
   if (op === 'row') { const n = document.createElement('tr'); for (let i = 0; i < tr.cells.length; i++) n.insertCell().innerHTML = '<br>'; tr.after(n); }
   if (op === 'col') for (const r of rows) { const ref = r.cells[Math.min(ci, r.cells.length - 1)], n = document.createElement(ref?.tagName === 'TH' ? 'th' : 'td'); n.innerHTML = '<br>'; ref ? ref.after(n) : r.append(n); }
@@ -734,7 +755,7 @@ function imgData(file) { // shrink photos so notes stay light: max 1600px, JPEG 
 }
 async function rtImages(files) {
   const list = [...files].filter(f => f.type.startsWith('image/')); if (!list.length) return;
-  try { const srcs = await Promise.all(list.map(imgData)); if (!rtFocus()) return; document.execCommand('insertHTML', false, srcs.map(s => `<img src="${s}">`).join(' ')); rtChanged(); toast(srcs.length + ' gambar disisipkan 🖼'); }
+  try { const srcs = await Promise.all(list.map(imgData)); if (!rtFocus()) return; histPush(); document.execCommand('insertHTML', false, srcs.map(s => `<img src="${s}">`).join(' ')); rtChanged(); toast(srcs.length + ' gambar disisipkan 🖼'); }
   catch (e) { toast('Gagal menyisipkan gambar: ' + e.message); }
 }
 function zoomImg(src) { // full-size view on top of everything (incl. the editor dialog)
@@ -791,8 +812,42 @@ function clRows(ro) {
   return open.map(([i, ix]) => row(i, ix)).join('') + (ro ? '' : '<div class="cl-row add"><span>＋</span><input type="text" id="cl-new" placeholder="Tambah item… (Enter)"></div>')
     + (done.length ? `<div class="muted small cl-done">☑ ${done.length} selesai</div>` + done.map(([i, ix]) => row(i, ix)).join('') : '');
 }
+// ---------- undo / redo (own history: covers typing, formatting, tables, checklist, title) ----------
+let histT = null;
+function caretPos() { // caret as a text offset inside the body, so undo/redo can put it back
+  const b = $('#e-body'), sel = getSelection(); if (!b || !sel.rangeCount || !b.contains(sel.focusNode)) return null;
+  const r = document.createRange(); r.selectNodeContents(b); r.setEnd(sel.focusNode, sel.focusOffset); return r.toString().length;
+}
+function setCaret(pos) {
+  const b = $('#e-body'); if (!b || pos == null) return; b.focus({ preventScroll: true });
+  const w = document.createTreeWalker(b, NodeFilter.SHOW_TEXT); let n, left = pos, last = null;
+  while ((n = w.nextNode())) { last = n; if (left <= n.data.length) break; left -= n.data.length; }
+  const r = document.createRange(); if (n) r.setStart(n, Math.max(0, left)); else if (last) r.setStart(last, last.data.length); else r.setStart(b, 0);
+  r.collapse(true); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+  const rc = r.getBoundingClientRect(), bc = b.getBoundingClientRect(); if (rc.height && (rc.top < bc.top || rc.bottom > bc.bottom)) b.scrollTop += rc.top - bc.top - bc.height / 3;
+}
+function snapEdit() { const d = S.edit.d; return { title: d.title || '', type: d.type, html: d.html || '', body: d.body || '', items: JSON.stringify(d.items || []), caret: caretPos() }; }
+const sameSnap = (a, b) => a && b && a.title === b.title && a.type === b.type && a.html === b.html && a.body === b.body && a.items === b.items;
+function histPush() { // record the current state (no-op when nothing changed)
+  const E = S.edit; clearTimeout(histT); if (!E?.hist || E.applying) return; syncRt();
+  const sn = snapEdit(); if (sameSnap(sn, E.hist[E.hi])) { E.hist[E.hi].caret = sn.caret; return; }
+  E.hist = E.hist.slice(0, E.hi + 1); E.hist.push(sn); if (E.hist.length > 200) E.hist.shift(); E.hi = E.hist.length - 1; histBtns();
+}
+function histSoon() { clearTimeout(histT); histT = setTimeout(histPush, 600); } // typing is grouped into ~0.6s chunks
+function histGo(step) {
+  const E = S.edit; if (!E?.hist || RO() || E.d.trashed) return; histPush();
+  const i = E.hi + step; if (i < 0 || i >= E.hist.length) { toast(step < 0 ? 'Tidak ada yang bisa di-undo' : 'Tidak ada yang bisa di-redo'); return; }
+  const cur = E.hist[E.hi], sn = E.hist[i]; E.hi = i;
+  Object.assign(E.d, { title: sn.title, type: sn.type, html: sn.html, body: sn.body, items: JSON.parse(sn.items) });
+  E.rtDirty = false; E.applying = true; toggleTblMenu(false);
+  const sc = $('#e-body')?.scrollTop; drawEditor(); if (sc != null && $('#e-body')) $('#e-body').scrollTop = sc;
+  setCaret(step < 0 ? cur.caret ?? sn.caret : sn.caret);
+  E.applying = false; E.dirty = true; clearTimeout(saveT); saveT = setTimeout(flushEdit, 500); histBtns();
+}
+function histBtns() { const E = S.edit; const u = $('[data-a=undo-e]'), r = $('[data-a=redo-e]'); if (u) u.disabled = !E || E.hi <= 0; if (r) r.disabled = !E || E.hi >= E.hist.length - 1; }
+
 let saveT = null;
-function editChanged(redraw) { S.edit.dirty = true; clearTimeout(saveT); saveT = setTimeout(flushEdit, 500); if (redraw) { const f = document.activeElement?.id; drawEditor(); if (f) $('#' + f)?.focus(); } }
+function editChanged(redraw) { S.edit.dirty = true; if (!S.edit.applying) histSoon(); clearTimeout(saveT); saveT = setTimeout(flushEdit, 500); if (redraw) { const f = document.activeElement?.id; drawEditor(); if (f) $('#' + f)?.focus(); } }
 function flushEdit() {
   clearTimeout(saveT); syncRt(); const E = S.edit; if (!E || !E.dirty || RO()) return; E.dirty = false;
   const d = { ...E.d, items: (E.d.items || []).filter(i => i.t.trim() || i.d) };
@@ -889,6 +944,10 @@ const A = {
   find: () => S.edit?.f ? closeFind() : openFind(),
   fnext: () => runFind(1), fprev: () => runFind(-1), fclose: () => closeFind(),
   fmt: el => rtCmd(el.dataset.v),
+  'undo-e': () => histGo(-1), 'redo-e': () => histGo(1),
+  tblmenu: () => toggleTblMenu(),
+  tblnew: el => rtTable(el.dataset.v),
+  tblop: el => rtTable(el.dataset.v),
   logout: () => logout(),
   new: () => openEditor(null, S.sec.startsWith('cat:') && !S.admin ? { cat: S.sec.slice(4) } : S.sec === 'fav' ? { fav: true } : S.sec === 'pin' ? { pinned: true } : S.sec.startsWith('tag:') ? { body: '\n\n#' + S.sec.slice(4) } : {}),
   newlist: () => openEditor(null, { type: 'list', ...(S.sec.startsWith('cat:') && !S.admin ? { cat: S.sec.slice(4) } : {}) }),
@@ -904,12 +963,12 @@ const A = {
   restore: () => { const k = S.edit.k; dlg().close(); setData(k, { trashed: null }); toast('Catatan dipulihkan ↩'); },
   purge: () => { const n = S.items.get(S.edit.k); if (!n || !confirm('Hapus permanen catatan ini? Tidak bisa dikembalikan.')) return; dlg().close(); put({ ...n, deleted: true, data: {} }); toast('Dihapus permanen.'); },
   etype: () => {
-    const d = S.edit.d;
+    histPush(); const d = S.edit.d;
     if (d.type === 'list') { d.body = (d.items || []).map(i => (i.d ? '✓ ' : '') + i.t).join('\n'); d.items = []; d.type = 'text'; d.html = ''; }
     else { d.html = ''; d.items = (d.body || '').split('\n').map(t => t.replace(/^\s*([-*•]|\d+[.)]|☐|☑|✓|\[ ?x?\])\s*/i, '').trim()).filter(Boolean).map(t => ({ t, d: false })); d.body = ''; d.type = 'list'; }
     editChanged(true);
   },
-  cdel: el => { S.edit.d.items.splice(Number(el.dataset.v), 1); editChanged(true); },
+  cdel: el => { histPush(); S.edit.d.items.splice(Number(el.dataset.v), 1); editChanged(true); },
   copy: async () => { try { await navigator.clipboard.writeText(noteText(S.edit.d)); toast('Disalin ke clipboard ⧉'); } catch { toast('Tidak bisa menyalin.'); } },
   share: async () => { try { await navigator.share({ title: S.edit.d.title || 'Catatan', text: noteText(S.edit.d) }); } catch {} },
   pdf: async el => { el.disabled = true; el.textContent = '⏳ PDF…'; try { await exportPdf(S.edit.d, S.edit.k ? S.items.get(S.edit.k) : null); toast('PDF diunduh 📄'); } catch (e) { toast('Gagal membuat PDF: ' + e.message); } el.disabled = false; el.textContent = '📄 PDF'; },
@@ -937,16 +996,25 @@ const A = {
 document.addEventListener('click', ev => {
   if (ev.target.closest('a[href]:not([data-a])')) return; // links inside notes
   if (ev.target.tagName === 'IMG' && ev.target.closest('.rt')) { ev.preventDefault(); ev.stopPropagation(); zoomImg(ev.target.src); return; }
+  if ($('.tbl-menu') && !ev.target.closest('.tbl-menu,[data-a=tblmenu]')) toggleTblMenu(false);
   const el = ev.target.closest('[data-a]'); if (!el || !A[el.dataset.a]) return;
   ev.preventDefault(); ev.stopPropagation(); syncRt(); A[el.dataset.a](el);
 });
-document.addEventListener('mousedown', ev => { if (ev.target.closest('.rt-bar button, .ed-find button')) ev.preventDefault(); }); // keep caret/selection in the note
+document.addEventListener('mousedown', ev => { if (ev.target.closest('.rt-bar button, .ed-find button, .tbl-menu button, .ed-bar .hb')) ev.preventDefault(); }); // keep caret/selection in the note
 document.addEventListener('selectionchange', () => { const s = getSelection(), b = $('#e-body'); if (s.rangeCount && b?.isContentEditable && b.contains(s.anchorNode)) S.rtRange = s.getRangeAt(0).cloneRange(); });
+document.addEventListener('beforeinput', ev => {
+  if (S.edit && (ev.inputType === 'historyUndo' || ev.inputType === 'historyRedo') && ev.target.closest?.('#dlg') && ev.target.id !== 'f-q') { ev.preventDefault(); histGo(ev.inputType === 'historyUndo' ? -1 : 1); }
+});
+document.addEventListener('mouseover', ev => { // table size preview in the grid
+  const b = ev.target.closest?.('[data-a=tblnew]'); if (!b) return; const [r, c] = b.dataset.v.split('x').map(Number);
+  document.querySelectorAll('.tbl-grid button').forEach(x => { const [xr, xc] = x.dataset.v.split('x').map(Number); x.classList.toggle('on', xr <= r && xc <= c); });
+  const sz = $('#tbl-sz'); if (sz) sz.textContent = `Sisipkan tabel ${r} × ${c}`;
+});
 document.addEventListener('paste', ev => { // pasted web/Word content: keep formatting + tables, drop everything unsafe
   const b = $('#e-body'); if (!b?.isContentEditable || !b.contains(ev.target)) return;
   const imgs = [...(ev.clipboardData?.files || [])].filter(f => f.type.startsWith('image/'));
   if (imgs.length) { ev.preventDefault(); rtImages(imgs); return; }
-  const h = ev.clipboardData?.getData('text/html'); if (!h) return;
+  const h = ev.clipboardData?.getData('text/html'); histPush(); if (!h) return;
   ev.preventDefault(); document.execCommand('insertHTML', false, cleanHtml(h.replace(/<!--[\s\S]*?-->/g, ''))); rtChanged();
 });
 document.addEventListener('input', ev => {
@@ -971,10 +1039,9 @@ document.addEventListener('change', ev => {
     if (t.id === 't-fc') rtCmd('foreColor', t.value);
     if (t.id === 't-bc') rtCmd('hiliteColor', t.value);
     if (t.id === 't-img' && t.files.length) { rtImages(t.files); t.value = ''; }
-    if (t.id === 't-tbl' && t.value) { const v = t.value; t.value = ''; rtTable(v); }
     if (t.id === 'e-cat') { if (t.value === '__new') { const id = newCatPrompt(); S.edit.d.cat = id || S.edit.d.cat; editChanged(true); } else { S.edit.d.cat = t.value; editChanged(); } }
     if (t.name === 'e-color') { S.edit.d.color = t.value; editChanged(true); }
-    if (t.dataset.ci !== undefined) { S.edit.d.items[Number(t.dataset.ci)].d = t.checked; editChanged(true); }
+    if (t.dataset.ci !== undefined) { histPush(); S.edit.d.items[Number(t.dataset.ci)].d = t.checked; editChanged(true); }
   }
   if (t.id === 'imp' && t.files[0]) t.files[0].text().then(txt => {
     const o = JSON.parse(txt); const list = (o.items || []).filter(i => i && (i.kind === 'note' || i.kind === 'meta') && i.data);
@@ -986,10 +1053,13 @@ document.addEventListener('change', ev => {
 document.addEventListener('keydown', ev => {
   const t = ev.target;
   if ((ev.metaKey || ev.ctrlKey) && !ev.altKey && ev.key.toLowerCase() === 'f' && S.edit && dlg().open) { ev.preventDefault(); openFind(); return; }
+  if ((ev.metaKey || ev.ctrlKey) && !ev.altKey && S.edit && dlg().open && t.id !== 'f-q' && (ev.key.toLowerCase() === 'z' || (ev.ctrlKey && ev.key.toLowerCase() === 'y'))) {
+    ev.preventDefault(); histGo(ev.key.toLowerCase() === 'y' || ev.shiftKey ? 1 : -1); return;
+  }
   if (t.id === 'f-q') { if (ev.key === 'Enter') { ev.preventDefault(); runFind(ev.shiftKey ? -1 : 1); } else if (ev.key === 'Escape') { ev.preventDefault(); closeFind(); } return; }
-  if (ev.key === 'Enter' && t.id === 'cl-new') { ev.preventDefault(); const v = t.value.trim(); if (!v) return; S.edit.d.items.push({ t: v, d: false }); editChanged(true); $('#cl-new')?.focus(); return; }
+  if (ev.key === 'Enter' && t.id === 'cl-new') { ev.preventDefault(); const v = t.value.trim(); if (!v) return; histPush(); S.edit.d.items.push({ t: v, d: false }); editChanged(true); $('#cl-new')?.focus(); return; }
   if (ev.key === 'Enter' && t.dataset?.ct !== undefined) { ev.preventDefault(); $('#cl-new')?.focus(); return; }
-  if (ev.key === 'Backspace' && t.dataset?.ct !== undefined && !t.value) { ev.preventDefault(); S.edit.d.items.splice(Number(t.dataset.ct), 1); editChanged(true); $('#cl-new')?.focus(); return; }
+  if (ev.key === 'Backspace' && t.dataset?.ct !== undefined && !t.value) { ev.preventDefault(); histPush(); S.edit.d.items.splice(Number(t.dataset.ct), 1); editChanged(true); $('#cl-new')?.focus(); return; }
   if (ev.key === 'Enter' && t.id === 'e-title' && S.edit) { ev.preventDefault(); ($('#e-body') || $('#cl-new'))?.focus(); return; }
   if (ev.key === 'Enter' && t.classList?.contains('ncard')) { A.open(t); return; }
   const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || dlg().open;
