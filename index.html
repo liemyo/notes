@@ -116,12 +116,14 @@ dialog.ed.col{background:color-mix(in srgb,var(--nc) var(--na),var(--card))}
 .nb.rt{white-space:normal}
 .nb.rt img{max-width:90px;max-height:70px}
 .nb.rt table{font-size:12px}
-.rt-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid color-mix(in srgb,var(--text) 10%,transparent)}
-.rt-bar select{padding:4px 6px;font-size:13px;background:color-mix(in srgb,var(--card) 70%,transparent);max-width:9.5em}
-.rt-g{display:inline-flex;gap:2px;border:1px solid var(--line);border-radius:10px;padding:1px}
-.rb{border:0;background:none;color:var(--text);cursor:pointer;min-width:30px;height:28px;border-radius:8px;display:inline-grid;place-items:center;font-size:14px;padding:0 6px;position:relative}
+.rt-bar{display:flex;gap:4px;align-items:stretch;padding:6px 0;border-bottom:1px solid color-mix(in srgb,var(--text) 10%,transparent)}
+.rt-bar>*{flex:1 1 0;min-width:0;height:32px}
+.rt-bar>.rw{flex:2.6 1 0}
+.rt-bar .tb{white-space:nowrap;font-size:13px;padding:0 4px}
+.rt-bar .rb{padding:0 2px}
+.rt-bar select{padding:4px 6px;font-size:13px;background:color-mix(in srgb,var(--card) 70%,transparent);border-radius:9px}
+.rb{border:1px solid var(--line);background:color-mix(in srgb,var(--card) 70%,transparent);color:var(--text);cursor:pointer;min-width:0;height:28px;border-radius:9px;display:inline-grid;place-items:center;font-size:14px;padding:0 6px;position:relative}
 .rb:hover{background:color-mix(in srgb,var(--text) 9%,transparent)}
-.rt-bar>.rb{border:1px solid var(--line);border-radius:10px}
 .rc input{position:absolute;left:4px;right:4px;bottom:1px;width:auto;height:5px;padding:0;border:0;border-radius:2px;opacity:1;cursor:pointer;-webkit-appearance:none;appearance:none}
 .rc input::-webkit-color-swatch-wrapper{padding:0}.rc input::-webkit-color-swatch{border:0;border-radius:2px}
 .rc span{margin-top:-4px;font-weight:700}
@@ -156,14 +158,20 @@ dialog.ed.col{background:color-mix(in srgb,var(--nc) var(--na),var(--card))}
 .cl-row.add span{width:18px;text-align:center;color:var(--muted)}
 .cl-done{margin:10px 0 2px}
 .x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:20px;line-height:1;padding:0 4px}
-.ed-opts{display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-top:1px solid color-mix(in srgb,var(--text) 10%,transparent);padding-top:10px}
-.ed-opts select{padding:5px 9px;font-size:13px;background:color-mix(in srgb,var(--card) 70%,transparent)}
+.ed-opts{display:flex;gap:10px;align-items:center}
+.ed-tog{display:flex;justify-content:flex-end;border-top:1px solid color-mix(in srgb,var(--text) 10%,transparent);margin-bottom:-4px}
+.ed-tog .et{margin-top:-15px;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--text);font-size:18px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0}
+.ed-tog .et:hover{border-color:var(--acc)}
+.ed-low{display:flex;flex-direction:column;gap:8px}.ed-low[hidden]{display:none}
+.ed-opts select{flex:1 1 0;min-width:0;padding:5px 9px;font-size:13px;background:color-mix(in srgb,var(--card) 70%,transparent)}
 .swatch{display:flex;gap:5px;flex-wrap:wrap}
 .swatch label{position:relative}
 .swatch input{position:absolute;opacity:0;pointer-events:none}
 .swatch span{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;cursor:pointer;border:1px solid color-mix(in srgb,var(--text) 18%,transparent);font-size:12px;color:var(--muted)}
 .swatch input:checked+span{outline:2px solid var(--text);outline-offset:1px}
 .ed-foot{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.ed-opts>.btn{flex:1 1 0}
+.ed-foot .sp{display:none}.ed-foot #e-info{flex:1 1 auto}.ed-foot .btn{flex:0 1 110px;text-align:center}
 .ed-foot .btn{background:color-mix(in srgb,var(--card) 70%,transparent)}
 .fld{display:flex;flex-direction:column;gap:6px}
 .fld>span{font-size:12.5px;font-weight:700;color:var(--muted)}
@@ -251,7 +259,10 @@ dialog.ed.col{background:color-mix(in srgb,var(--nc) var(--na),var(--card))}
   .ed-foot .btn{flex:1}
   .ed-foot .sp{display:none}
   .ed-foot .btn{padding:8px 4px}
-  .ed-bar{justify-content:space-between}
+  .ed-bar{justify-content:space-between;margin:0}.ed-bar .sp{display:none}.ed-bar .ib{width:38px;height:38px}
+  .rt-bar{display:grid;grid-template-columns:repeat(21,1fr);gap:5px}
+  .rt-bar>*{grid-column:span 3;height:34px}.rt-bar>.rw{grid-column:span 7}
+  .rt-bar select{font-size:14px}
   .tbl-menu{flex-direction:column;gap:10px}.tbl-grid{grid-template-columns:repeat(var(--c),1fr);width:100%}.tbl-grid button{width:auto;height:22px}.tbl-new{width:100%}
   .tbl-ops{min-width:0;width:100%;display:grid;grid-template-columns:1fr 1fr}.tbl-ops>span,.tbl-ops [data-v=del]{grid-column:1/-1}.tbl-ops .btn{width:100%}
   .toast{bottom:90px}
@@ -263,7 +274,7 @@ dialog.ed.col{background:color-mix(in srgb,var(--nc) var(--na),var(--card))}
 <dialog id="dlg"></dialog>
 <noscript>Notes memerlukan JavaScript.</noscript>
 <script>// Notes — catatan dengan favorit, kategori, tag, checklist, arsip & sampah. Akun (nama pengguna + PIN) sama dengan Planner; data di Supabase (proyek saku-yuk), sinkron real time.
-const BUILD = '20261003-214615';
+const BUILD = '20261003-215818';
 const SB_URL = 'https://bbptcxpzzvgpxqylkrmw.supabase.co', SB_KEY = 'sb_publishable_Ny-WHCEZ3WmcLFsPBx9QeQ_9xgo7MxR'; // public key; tables closed, only nt_*/pl_* functions
 const ADMIN = 'admin';
 
@@ -638,13 +649,14 @@ function drawEditor() {
     ${E.f ? findBar() : ''}
     <input id="e-title" class="e-title" placeholder="Judul" maxlength="200" value="${esc(d.title)}"${dis}>
     ${d.type === 'list' ? `<div class="cl-ed" id="cl-ed">${clRows(ro)}</div>` : (ro ? '' : rtBar()) + `<div id="e-body" class="e-body rt" contenteditable="${ro ? 'false' : 'true'}" role="textbox" aria-multiline="true" data-ph="Tulis catatan… (pakai #tag untuk menandai)">${d.html ? cleanHtml(d.html) : plainToHtml(d.body)}</div>`}
-    <div class="ed-opts">
+    <div class="ed-tog"><button type="button" class="et" data-a="edlow" aria-expanded="${LS.get('edlow') !== 'hide'}" title="${LS.get('edlow') === 'hide' ? 'Tampilkan opsi' : 'Sembunyikan opsi'}">${LS.get('edlow') === 'hide' ? '⌃' : '⌄'}</button></div>
+    <div class="ed-low"${LS.get('edlow') === 'hide' ? ' hidden' : ''}><div class="ed-opts">
       <select id="e-cat" title="Kategori"${dis}><option value="">◻️ Tanpa kategori</option>${cs.map(c => `<option value="${esc(c.id)}"${d.cat === c.id ? ' selected' : ''}>${esc(catLabel(c))}</option>`).join('')}${ro ? '' : '<option value="__new">＋ Kategori baru…</option>'}</select>
       <div class="swatch" role="radiogroup" aria-label="Warna">${Object.entries(COLORS).map(([k, [l, c]]) => `<label title="${l}"><input type="radio" name="e-color" value="${k}"${col === k ? ' checked' : ''}${dis}><span style="background:${k ? c : 'var(--card)'}">${k ? '' : '⃠'}</span></label>`).join('')}</div>
       ${ro ? '' : `<button type="button" class="btn sm" data-a="etype">${d.type === 'list' ? '¶ Jadikan teks' : '☑ Jadikan checklist'}</button>`}
     </div>
     <div class="ed-foot"><span class="muted small" id="e-info">${n ? 'Diubah ' + fullDT(n.updated) + ' · ' : ''}${words} kata${n ? ' · dibuat ' + fullDT(d.created || n.updated) : ''}</span><span class="sp"></span>
-      <button type="button" class="btn sm" data-a="copy">⧉ Salin</button>${navigator.share ? '<button type="button" class="btn sm" data-a="share">↗ Bagikan</button>' : ''}<button type="button" class="btn sm" data-a="pdf">📄 PDF</button><button type="button" class="btn sm" data-a="dltxt">⬇ .txt</button></div>
+      <button type="button" class="btn sm" data-a="copy">⧉ Salin</button>${navigator.share ? '<button type="button" class="btn sm" data-a="share">↗ Bagikan</button>' : ''}<button type="button" class="btn sm" data-a="pdf">📄 PDF</button><button type="button" class="btn sm" data-a="dltxt">⬇ .txt</button></div></div>
   </div>`;
   if (E.f) runFind(0);
 }
@@ -678,18 +690,18 @@ function syncRt() { // editor DOM → note data (html for display, plain body fo
 function rtChanged() { if (!S.edit) return; S.edit.rtDirty = true; editChanged(); findSoon(); }
 const RT_FONTS = [['', 'Font'], ['-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif', 'Sans'], ['Georgia,Times New Roman,serif', 'Serif'], ['Menlo,Consolas,monospace', 'Mono'], ['Arial,Helvetica,sans-serif', 'Arial'], ['Times New Roman,Times,serif', 'Times'], ['Verdana,sans-serif', 'Verdana'], ['Trebuchet MS,sans-serif', 'Trebuchet'], ['Comic Sans MS,Chalkboard SE,cursive', 'Comic']];
 const RT_SIZES = [12, 14, 16, 18, 20, 24, 28, 32, 40];
-function rtBar() {
+function rtBar() { // flat list: one full row on desktop, an even 3 / 7 / 7 grid on phones
   const b = (a, l, t, v = '') => `<button type="button" class="rb" data-a="${a}"${v ? ` data-v="${v}"` : ''} title="${t}">${l}</button>`;
   return `<div class="rt-bar" role="toolbar" aria-label="Format teks">
-    <select id="t-font" title="Jenis huruf">${RT_FONTS.map(([v, l]) => `<option value="${esc(v)}">${l}</option>`).join('')}</select>
-    <select id="t-size" title="Ukuran huruf"><option value="">Ukuran</option>${RT_SIZES.map(z => `<option value="${z}">${z}</option>`).join('')}</select>
-    <span class="rt-g">${b('fmt', '<b>B</b>', 'Tebal (⌘B)', 'bold')}${b('fmt', '<i>I</i>', 'Miring (⌘I)', 'italic')}${b('fmt', '<u>U</u>', 'Garis bawah (⌘U)', 'underline')}${b('fmt', '<s>S</s>', 'Coret', 'strikeThrough')}</span>
-    <span class="rt-g"><label class="rb rc" title="Warna teks"><span>A</span><input type="color" id="t-fc" value="#e03131"></label><label class="rb rc" title="Warna stabilo / latar teks"><span>🖍</span><input type="color" id="t-bc" value="#ffe066"></label></span>
-    <span class="rt-g">${b('fmt', '≡', 'Rata kiri', 'justifyLeft')}${b('fmt', '☰', 'Rata tengah', 'justifyCenter')}${b('fmt', '⫶≡', 'Rata kanan', 'justifyRight')}${b('fmt', '▤', 'Rata kiri-kanan', 'justifyFull')}</span>
-    <span class="rt-g">${b('fmt', '•≡', 'Daftar berpoin', 'insertUnorderedList')}${b('fmt', '1.', 'Daftar bernomor', 'insertOrderedList')}</span>
-    <button type="button" class="rb tb" data-a="tblmenu" title="Tabel">⊞ Tabel ▾</button>
-    <label class="rb" title="Sisipkan gambar">🖼<input type="file" id="t-img" accept="image/*" multiple hidden></label>
+    <select id="t-font" class="rw" title="Jenis huruf">${RT_FONTS.map(([v, l]) => `<option value="${esc(v)}">${l}</option>`).join('')}</select>
+    <select id="t-size" class="rw" title="Ukuran huruf"><option value="">Ukuran</option>${RT_SIZES.map(z => `<option value="${z}">${z}</option>`).join('')}</select>
+    <button type="button" class="rb rw tb" data-a="tblmenu" title="Tabel">⊞ Tabel ▾</button>
+    ${b('fmt', '<b>B</b>', 'Tebal (⌘B)', 'bold')}${b('fmt', '<i>I</i>', 'Miring (⌘I)', 'italic')}${b('fmt', '<u>U</u>', 'Garis bawah (⌘U)', 'underline')}${b('fmt', '<s>S</s>', 'Coret', 'strikeThrough')}
+    <label class="rb rc" title="Warna teks"><span>A</span><input type="color" id="t-fc" value="#e03131"></label><label class="rb rc" title="Warna stabilo / latar teks"><span>🖍</span><input type="color" id="t-bc" value="#ffe066"></label>
     ${b('fmt', '⌫A', 'Hapus format', 'removeFormat')}
+    ${b('fmt', '≡', 'Rata kiri', 'justifyLeft')}${b('fmt', '☰', 'Rata tengah', 'justifyCenter')}${b('fmt', '⫶≡', 'Rata kanan', 'justifyRight')}${b('fmt', '▤', 'Rata kiri-kanan', 'justifyFull')}
+    ${b('fmt', '•≡', 'Daftar berpoin', 'insertUnorderedList')}${b('fmt', '1.', 'Daftar bernomor', 'insertOrderedList')}
+    <label class="rb" title="Sisipkan gambar">🖼<input type="file" id="t-img" accept="image/*" multiple hidden></label>
   </div>`;
 }
 function rtFocus() { // put the caret back where it was before a toolbar control took focus
@@ -944,6 +956,10 @@ const A = {
   find: () => S.edit?.f ? closeFind() : openFind(),
   fnext: () => runFind(1), fprev: () => runFind(-1), fclose: () => closeFind(),
   fmt: el => rtCmd(el.dataset.v),
+  edlow: el => { // hide / show the colour, category and export area (remembered per device)
+    const hide = LS.get('edlow') !== 'hide'; hide ? LS.set('edlow', 'hide') : LS.del('edlow');
+    $('.ed-low').hidden = hide; el.textContent = hide ? '⌃' : '⌄'; el.title = hide ? 'Tampilkan opsi' : 'Sembunyikan opsi'; el.setAttribute('aria-expanded', String(!hide));
+  },
   'undo-e': () => histGo(-1), 'redo-e': () => histGo(1),
   tblmenu: () => toggleTblMenu(),
   tblnew: el => rtTable(el.dataset.v),
