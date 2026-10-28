@@ -278,13 +278,9 @@ dialog.ed.col{background:color-mix(in srgb,var(--nc) var(--na),var(--card))}
 <dialog id="dlg"></dialog>
 <noscript>Notes memerlukan JavaScript.</noscript>
 <script>// Notes — catatan dengan favorit, kategori, tag, checklist, arsip & sampah. Akun (nama pengguna + PIN) sama dengan Planner; data di Supabase (proyek saku-yuk), sinkron real time.
-const BUILD = '20261027-233456';
+const BUILD = '20261003-221034';
 const SB_URL = 'https://bbptcxpzzvgpxqylkrmw.supabase.co', SB_KEY = 'sb_publishable_Ny-WHCEZ3WmcLFsPBx9QeQ_9xgo7MxR'; // public key; tables closed, only nt_*/pl_* functions
 const ADMIN = 'admin';
-// Gambar di catatan → Backblaze B2 (penyimpanan bersama pantau/klip-worker, situs 'notes', per akun) lewat Supabase Edge Function simpan.
-// Catatan menyimpan <img data-b2="s/notes/…">; src diisi tautan sementara saat tampil. Gagal unggah → gambar tetap disimpan di catatan (data URL).
-const B2_URL = 'https://bbptcxpzzvgpxqylkrmw.supabase.co/functions/v1/simpan', B2_PATH = /^s\/notes\/[0-9a-f]{16}_[A-Za-z0-9_-]{10,47}$/;
-const B2_DOT = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
 // ---------- helpers ----------
 const $ = s => document.querySelector(s);
@@ -678,7 +674,7 @@ function cleanHtml(html) { // whitelist sanitizer: notes of other users are show
   const t = document.createElement('template'); t.innerHTML = html;
   const walk = el => { for (const c of [...el.children]) {
     if (!RT_TAGS.has(c.tagName)) { if (RT_DROP.test(c.tagName)) c.remove(); else { walk(c); c.replaceWith(...c.childNodes); } continue; }
-    if (c.tagName === 'IMG') { const src = c.getAttribute('src') || '', b2 = c.getAttribute('data-b2') || ''; [...c.attributes].forEach(a => c.removeAttribute(a.name)); if (B2_PATH.test(b2)) { c.setAttribute('src', B2_DOT); c.setAttribute('data-b2', b2); } else if (/^data:image\/(png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(src)) c.setAttribute('src', src); else c.remove(); continue; }
+    if (c.tagName === 'IMG') { const src = c.getAttribute('src') || ''; [...c.attributes].forEach(a => c.removeAttribute(a.name)); if (/^data:image\/(png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(src)) c.setAttribute('src', src); else c.remove(); continue; }
     const href = c.tagName === 'A' && /^https?:\/\//i.test(c.getAttribute('href') || '') ? c.getAttribute('href') : null;
     const css = []; for (const k of [...c.style]) { const v = c.style.getPropertyValue(k); if (RT_CSS.test(k) && !/url\(|expression|javascript/i.test(v)) css.push(k + ':' + v); }
     for (const a of [...c.attributes]) { const n = a.name; if ((n === 'colspan' || n === 'rowspan') && /^\d{1,2}$/.test(a.value)) continue; if (c.tagName === 'FONT' && /^(color|face|size)$/.test(n) && !/[<>"]/.test(a.value)) continue; c.removeAttribute(n); }
@@ -693,9 +689,7 @@ const plainToHtml = t => esc(t || '').replace(/ {2}/g, ' &nbsp;').replace(/\n/g,
 function syncRt() { // editor DOM → note data (html for display, plain body for search/#tags/PDF/.txt)
   const E = S.edit, el = $('#e-body'); if (!E || !E.rtDirty || !el) return; E.rtDirty = false;
   const body = el.innerText.replace(/ /g, ' ').replace(/\n+$/, '');
-  let html = el.innerHTML;
-  if (el.querySelector('img[data-b2]')) { const t = el.cloneNode(true); t.querySelectorAll('img[data-b2]').forEach(i => i.setAttribute('src', B2_DOT)); html = t.innerHTML; } // tautan B2 kedaluwarsa, cukup simpan path
-  E.d.body = body; E.d.html = body.trim() || el.querySelector('table,hr,img') ? html : '';
+  E.d.body = body; E.d.html = body.trim() || el.querySelector('table,hr,img') ? el.innerHTML : '';
 }
 function rtChanged() { if (!S.edit) return; S.edit.rtDirty = true; editChanged(); findSoon(); }
 const RT_FONTS = [['', 'Font'], ['-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif', 'Sans'], ['Georgia,Times New Roman,serif', 'Serif'], ['Menlo,Consolas,monospace', 'Mono'], ['Arial,Helvetica,sans-serif', 'Arial'], ['Times New Roman,Times,serif', 'Times'], ['Verdana,sans-serif', 'Verdana'], ['Trebuchet MS,sans-serif', 'Trebuchet'], ['Comic Sans MS,Chalkboard SE,cursive', 'Comic']];
@@ -776,39 +770,9 @@ function imgData(file) { // shrink photos so notes stay light: max 1600px, JPEG 
     im.onerror = () => { URL.revokeObjectURL(url); rej(new Error('bukan gambar')); }; im.src = url;
   });
 }
-// ---------- B2 ----------
-async function b2(path, init = {}) {
-  const r = await fetch(B2_URL + path, { ...init, cache: 'no-store', headers: { 'x-site': 'notes', 'x-token': S.user + '\n' + (S.pin || ''), ...(init.headers || {}) } });
-  const j = await r.json().catch(() => null);
-  if (!r.ok) throw new Error('B2: ' + (j?.error || r.status));
-  return j;
-}
-let b2Me = null; const b2Links = new Map(); // path → {url, until}
-async function b2Img(dataUrl) { // data URL → path di B2 (null kalau gagal / admin)
-  if (S.admin || !S.user) return null;
-  try {
-    b2Me ||= await b2('/me');
-    const blob = await (await fetch(dataUrl)).blob(), a = crypto.getRandomValues(new Uint8Array(15));
-    const p = b2Me.prefix + [...a].map(x => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'[x % 62]).join('');
-    await b2('/o/' + p, { method: 'PUT', body: blob, headers: { 'Content-Type': blob.type } });
-    b2Links.set(p, { url: dataUrl, until: Infinity }); return p;
-  } catch (e) { console.warn('B2 gagal, gambar disimpan di catatan:', e); return null; }
-}
-let b2Busy = false;
-async function b2Hydrate() { // isi src gambar B2 yang tampil di layar
-  if (b2Busy || S.admin || !S.user) return; b2Busy = true;
-  try {
-    const imgs = [...document.querySelectorAll('img[data-b2]')].filter(i => i.getAttribute('src') === B2_DOT);
-    const need = [...new Set(imgs.map(i => i.dataset.b2))].filter(p => !(b2Links.get(p)?.until > Date.now()));
-    if (need.length) { const j = await b2('/sign', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paths: need }) }); for (const [p, url] of Object.entries(j)) b2Links.set(p, { url, until: Date.now() + 20 * 3600e3 }); }
-    for (const i of imgs) { const l = b2Links.get(i.dataset.b2); if (l) i.src = l.url; }
-  } catch (e) { console.warn('B2:', e); } finally { b2Busy = false; }
-  if ([...document.querySelectorAll('img[data-b2]')].some(i => i.getAttribute('src') === B2_DOT && b2Links.get(i.dataset.b2))) b2Hydrate();
-}
-new MutationObserver(() => { if (document.querySelector(`img[data-b2][src="${B2_DOT}"]`)) queueMicrotask(b2Hydrate); }).observe(document.documentElement, { childList: true, subtree: true });
 async function rtImages(files) {
   const list = [...files].filter(f => f.type.startsWith('image/')); if (!list.length) return;
-  try { const srcs = await Promise.all(list.map(imgData)), paths = await Promise.all(srcs.map(b2Img)); if (!rtFocus()) return; histPush(); document.execCommand('insertHTML', false, srcs.map((s, i) => paths[i] ? `<img src="${s}" data-b2="${paths[i]}">` : `<img src="${s}">`).join(' ')); rtChanged(); toast(srcs.length + ' gambar disisipkan 🖼'); }
+  try { const srcs = await Promise.all(list.map(imgData)); if (!rtFocus()) return; histPush(); document.execCommand('insertHTML', false, srcs.map(s => `<img src="${s}">`).join(' ')); rtChanged(); toast(srcs.length + ' gambar disisipkan 🖼'); }
   catch (e) { toast('Gagal menyisipkan gambar: ' + e.message); }
 }
 function zoomImg(src) { // full-size view on top of everything (incl. the editor dialog)
