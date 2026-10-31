@@ -8,139 +8,269 @@
 if (Math.min(screen.width, screen.height) <= 820) document.querySelector('meta[name=viewport]').content = 'width=device-width, initial-scale=0.88, minimum-scale=0.88, maximum-scale=0.88, viewport-fit=cover';</script>
 <title>Notes</title>
 <meta name="description" content="Notes: catatan sederhana dengan favorit, kategori, tag, checklist, arsip dan sampah — sinkron real time di HP dan laptop.">
-<meta name="theme-color" content="#d98a00">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%23f0a020'/><path d='M30 30h40M30 50h40M30 70h24' fill='none' stroke='white' stroke-width='9' stroke-linecap='round'/></svg>">
-<style>:root{--bg:#f6f6f3;--card:#fff;--soft:#efefea;--line:#e3e3dc;--text:#1b1c1f;--muted:#6b6e76;--acc:#d98a00;--acc-ink:#fff;--star:#f0a020;--red:#d93d42;--na:62%;--shadow:0 1px 2px rgba(20,20,10,.05),0 4px 14px rgba(20,20,10,.05);color-scheme:light}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#121316;--card:#1b1d22;--soft:#24262c;--line:#2e3138;--text:#eef0f3;--muted:#9da2ad;--acc:#ffb02e;--acc-ink:#1b1200;--star:#ffc04d;--red:#ff6b70;--na:24%;--shadow:none;color-scheme:dark}}
-:root[data-theme=dark]{--bg:#121316;--card:#1b1d22;--soft:#24262c;--line:#2e3138;--text:#eef0f3;--muted:#9da2ad;--acc:#ffb02e;--acc-ink:#1b1200;--star:#ffc04d;--red:#ff6b70;--na:24%;--shadow:none;color-scheme:dark}
+<meta name="theme-color" content="#f4f5f7">
+<script>/* theme before first paint (no flash): mode, style (plain|glass), backdrop, accent */
+(function () { var g = function (k) { try { return localStorage.getItem('notes.' + k); } catch (e) { return null; } }, h = document.documentElement, m = g('theme') || 'auto';
+  h.dataset.mode = m === 'dark' || (m === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  h.dataset.style = g('style') || 'glass'; h.dataset.wall = g('wall') || 'mist'; h.dataset.acc = g('acc') || 'blue'; })();</script>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%232563eb'/><path d='M30 30h40M30 50h40M30 70h24' fill='none' stroke='white' stroke-width='9' stroke-linecap='round'/></svg>">
+<style>/* ---------- tokens ---------- */
+:root{
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  --bg:#f4f5f7;--surface:#fff;--surface-2:#f3f4f6;--surface-solid:#fff;--hover:rgba(16,24,40,.055);
+  --line:#e5e7eb;--line-2:#d8dbe1;--text:#14161a;--text-2:#3d424b;--muted:#6b7280;--red:#d92d20;--star:#f5a524;--na:55%;
+  --shadow:0 1px 2px rgba(16,24,40,.04);--shadow-h:0 2px 4px rgba(16,24,40,.04),0 12px 28px -10px rgba(16,24,40,.18);--shadow-lg:0 24px 64px -12px rgba(16,24,40,.3);
+  --sheen:linear-gradient(transparent,transparent);--blur:none;
+  --acc:var(--acc-l,#2563eb);--acc-ink:#fff;--acc-soft:color-mix(in srgb,var(--acc) 11%,transparent);
+  /* glass backdrops (light / dark) */
+  --w-mist-l:radial-gradient(60% 55% at 12% 8%,#d6e4ff 0,transparent 70%),radial-gradient(50% 50% at 92% 18%,#efe3ff 0,transparent 70%),radial-gradient(60% 60% at 60% 100%,#d4f1ea 0,transparent 70%),#eef1f6;
+  --w-mist-d:radial-gradient(60% 55% at 12% 8%,#1b2b4d 0,transparent 70%),radial-gradient(50% 50% at 92% 18%,#2b1f45 0,transparent 70%),radial-gradient(60% 60% at 60% 100%,#11332e 0,transparent 70%),#0c0f16;
+  --w-aurora-l:radial-gradient(55% 50% at 8% 0%,#8fd0ff 0,transparent 70%),radial-gradient(50% 55% at 96% 22%,#c4a8ff 0,transparent 70%),radial-gradient(60% 55% at 38% 100%,#86e9cb 0,transparent 70%),#e8edf6;
+  --w-aurora-d:radial-gradient(55% 50% at 8% 0%,#0f4a78 0,transparent 70%),radial-gradient(50% 55% at 96% 22%,#3e2a7c 0,transparent 70%),radial-gradient(60% 55% at 38% 100%,#0c5a48 0,transparent 70%),#090c13;
+  --w-dusk-l:radial-gradient(55% 50% at 0% 0%,#ffd3b8 0,transparent 70%),radial-gradient(55% 50% at 100% 28%,#f8bcd6 0,transparent 70%),radial-gradient(60% 60% at 50% 100%,#cdbaff 0,transparent 70%),#f6eef0;
+  --w-dusk-d:radial-gradient(55% 50% at 0% 0%,#5b2d22 0,transparent 70%),radial-gradient(55% 50% at 100% 28%,#58234a 0,transparent 70%),radial-gradient(60% 60% at 50% 100%,#2d2562 0,transparent 70%),#110c13;
+  --w-ocean-l:radial-gradient(55% 50% at 5% 5%,#a3cbff 0,transparent 70%),radial-gradient(50% 50% at 95% 30%,#86e3ff 0,transparent 70%),radial-gradient(60% 60% at 45% 100%,#aab9ff 0,transparent 70%),#e8f0fb;
+  --w-ocean-d:radial-gradient(55% 50% at 5% 5%,#0b3a70 0,transparent 70%),radial-gradient(50% 50% at 95% 30%,#06505f 0,transparent 70%),radial-gradient(60% 60% at 45% 100%,#1d2a6e 0,transparent 70%),#070b15;
+  --w-graphite-l:radial-gradient(55% 50% at 10% 0%,#dfe2e7 0,transparent 70%),radial-gradient(50% 50% at 95% 35%,#e9e4dc 0,transparent 70%),radial-gradient(60% 60% at 50% 100%,#d9dde3 0,transparent 70%),#eceef1;
+  --w-graphite-d:radial-gradient(55% 50% at 10% 0%,#2a2d33 0,transparent 70%),radial-gradient(50% 50% at 95% 35%,#2b2924 0,transparent 70%),radial-gradient(60% 60% at 50% 100%,#22262c 0,transparent 70%),#101114;
+  --wall:var(--wall-l,var(--w-mist-l));
+  color-scheme:light}
+[data-mode=dark]{
+  --bg:#0f1115;--surface:#171a1f;--surface-2:#1e2228;--surface-solid:#171a1f;--hover:rgba(255,255,255,.06);
+  --line:#262a31;--line-2:#343944;--text:#eceef2;--text-2:#c5c9d1;--muted:#8d939e;--red:#ff6b61;--star:#fbbf24;--na:26%;
+  --shadow:none;--shadow-h:0 12px 28px -10px rgba(0,0,0,.6);--shadow-lg:0 24px 64px -12px rgba(0,0,0,.7);
+  --acc:var(--acc-d,#6b9bff);--acc-ink:#0b0d12;--acc-soft:color-mix(in srgb,var(--acc) 15%,transparent);
+  --wall:var(--wall-d,var(--w-mist-d));
+  color-scheme:dark}
+[data-acc=blue]{--acc-l:#2563eb;--acc-d:#6b9bff}
+[data-acc=violet]{--acc-l:#6d4fe0;--acc-d:#a693ff}
+[data-acc=green]{--acc-l:#16803c;--acc-d:#4ade80}
+[data-acc=amber]{--acc-l:#d97706;--acc-d:#fbbf24}
+[data-acc=rose]{--acc-l:#e11d48;--acc-d:#fb7185}
+[data-acc=mono]{--acc-l:#27272a;--acc-d:#e4e4e7}
+[data-wall=mist]{--wall-l:var(--w-mist-l);--wall-d:var(--w-mist-d)}
+[data-wall=aurora]{--wall-l:var(--w-aurora-l);--wall-d:var(--w-aurora-d)}
+[data-wall=dusk]{--wall-l:var(--w-dusk-l);--wall-d:var(--w-dusk-d)}
+[data-wall=ocean]{--wall-l:var(--w-ocean-l);--wall-d:var(--w-ocean-d)}
+[data-wall=graphite]{--wall-l:var(--w-graphite-l);--wall-d:var(--w-graphite-d)}
+/* liquid glass: translucent surfaces, frosted blur, bright rim + soft sheen over a colour backdrop */
+[data-style=glass]{
+  --surface:rgba(255,255,255,.56);--surface-2:rgba(255,255,255,.4);--surface-solid:rgba(255,255,255,.8);--hover:rgba(16,24,40,.06);
+  --line:rgba(255,255,255,.72);--line-2:rgba(16,24,40,.11);
+  --rim:linear-gradient(140deg,rgba(255,255,255,.95),rgba(255,255,255,.18) 38%,rgba(255,255,255,.05) 62%,rgba(255,255,255,.7));
+  --sheen:linear-gradient(165deg,rgba(255,255,255,.42),rgba(255,255,255,0) 46%);
+  --blur:saturate(185%) blur(22px);
+  --shadow:0 1px 1px rgba(16,24,40,.03),0 8px 24px -10px rgba(16,24,40,.16);--shadow-h:0 2px 6px rgba(16,24,40,.05),0 18px 36px -14px rgba(16,24,40,.28)}
+[data-style=glass][data-mode=dark]{
+  --surface:rgba(32,35,44,.5);--surface-2:rgba(44,48,58,.38);--surface-solid:rgba(24,27,34,.84);--hover:rgba(255,255,255,.07);
+  --line:rgba(255,255,255,.1);--line-2:rgba(255,255,255,.13);
+  --rim:linear-gradient(140deg,rgba(255,255,255,.34),rgba(255,255,255,.04) 38%,rgba(255,255,255,0) 62%,rgba(255,255,255,.2));
+  --sheen:linear-gradient(165deg,rgba(255,255,255,.07),rgba(255,255,255,0) 46%);
+  --shadow:0 10px 30px -12px rgba(0,0,0,.55);--shadow-h:0 20px 40px -14px rgba(0,0,0,.7)}
+
+/* ---------- base ---------- */
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;-webkit-text-size-adjust:100%}
+html{background:var(--bg)}
+body{margin:0;min-height:100dvh;background:var(--bg);color:var(--text);font:14.5px/1.5 var(--font);-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+[data-style=glass] body{background:transparent}
+[data-style=glass] body::before{content:'';position:fixed;inset:0;z-index:-1;background:var(--wall)}
 button,input,select,textarea{font:inherit;color:inherit}
-input,select,textarea{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 11px;min-width:0;color:var(--text)}
-input:focus,select:focus,textarea:focus{outline:2px solid color-mix(in srgb,var(--acc) 45%,transparent);border-color:var(--acc)}
-.btn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 13px;cursor:pointer;white-space:nowrap;font-weight:500}
-.btn:hover{background:var(--soft)}
-.btn.primary{background:var(--acc);border-color:var(--acc);color:var(--acc-ink);font-weight:600}
-.btn.danger{color:var(--red)}
-.btn.sm{padding:5px 10px;font-size:13px}
+input,select,textarea{background:var(--surface-solid);border:1px solid var(--line-2);border-radius:9px;padding:8px 11px;min-width:0;color:var(--text)}
+input:focus,select:focus,textarea:focus{outline:3px solid var(--acc-soft);border-color:var(--acc)}
+.i{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;display:block}
 .muted{color:var(--muted)}.small{font-size:13px}
-.ib{border:0;background:none;cursor:pointer;width:34px;height:34px;border-radius:50%;display:inline-grid;place-items:center;font-size:18px;color:var(--muted);padding:0;flex:none}
-.ib:hover{background:color-mix(in srgb,var(--text) 8%,transparent)}
-.ib.on{color:var(--star)}
-.ib:disabled{opacity:.3;cursor:default}
-/* top bar */
-.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 90%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-.top-in{padding:10px 24px;display:flex;align-items:center;gap:14px}
-.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:17px;width:220px;flex:none}
-.logo{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(135deg,#f5b335,#e07b00);color:#fff;font-size:16px}
-.search{flex:1;display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:0 12px}
-.search:focus-within{border-color:var(--acc)}
-.search input{border:0;outline:0;flex:1;background:none;padding:9px 0}
-.top-r{margin-left:auto;display:flex;align-items:center;gap:10px}
-.sync{font-size:12px;color:var(--muted);white-space:nowrap}
-.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);border-radius:99px;padding:5px 11px;cursor:pointer;font-weight:600;font-size:13px;white-space:nowrap}
-/* layout */
-.wrap{display:grid;grid-template-columns:220px 1fr;gap:24px;padding:0 24px}
-.side{position:sticky;top:58px;align-self:start;max-height:calc(100dvh - 58px);overflow:auto;padding:14px 0 40px;display:flex;flex-direction:column;gap:2px}
-.nav{display:flex;align-items:center;gap:10px;border:0;background:none;padding:8px 12px;border-radius:0 99px 99px 0;margin-left:-24px;padding-left:36px;cursor:pointer;text-align:left;color:var(--text);font-weight:500}
-.nav:hover{background:var(--soft)}
-.nav.on{background:color-mix(in srgb,var(--acc) 18%,transparent);font-weight:700}
-.nav .ic{width:20px;text-align:center}
+kbd{font:500 11.5px/1 var(--font);color:var(--muted);border:1px solid var(--line-2);border-radius:5px;padding:3px 6px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:36px;padding:0 14px;border:1px solid var(--line-2);background:var(--surface);color:var(--text);border-radius:9px;font-weight:550;font-size:14px;cursor:pointer;white-space:nowrap;text-decoration:none}
+.btn .i{width:16px;height:16px}
+.btn:hover{background:color-mix(in srgb,var(--text) 5%,var(--surface))}
+.btn.sm{height:32px;padding:0 11px;font-size:13px;border-radius:8px}
+.btn.primary{background:var(--acc);border-color:transparent;color:var(--acc-ink)}
+.btn.primary:hover{background:color-mix(in srgb,var(--acc) 88%,var(--text))}
+.btn.danger{color:var(--red)}
+.btn.ghost{border-color:transparent;background:none;color:var(--muted)}.btn.ghost:hover{color:var(--text);background:var(--hover)}
+.btn.on{color:var(--acc);border-color:color-mix(in srgb,var(--acc) 45%,transparent);background:var(--acc-soft)}
+.btn:disabled{opacity:.6;cursor:default}
+.ib{width:36px;height:36px;border:0;background:none;border-radius:9px;display:inline-grid;place-items:center;color:var(--muted);cursor:pointer;padding:0;flex:none}
+.ib .i{width:19px;height:19px}
+.ib:hover{background:var(--hover);color:var(--text)}
+.ib.on{color:var(--acc)}
+.ib.fv.on{color:var(--star)}.ib.fv.on .i{fill:currentColor}
+.ib:disabled{opacity:.32;cursor:default;background:none}
+.ib.sm{width:28px;height:28px;margin:-4px -7px 0 0;border-radius:7px}.ib.sm .i{width:17px;height:17px}
+.sel{display:inline-flex;align-items:center;gap:4px;height:34px;padding:0 4px 0 10px;border:1px solid var(--line-2);border-radius:9px;background:var(--surface);color:var(--muted)}
+.sel .i{width:15px;height:15px}
+.sel select{border:0;background:none;padding:0 6px;height:100%;font-size:13px;color:var(--text);outline:0!important;cursor:pointer}
+.sel:focus-within{border-color:var(--acc)}
+.segv{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line-2);border-radius:9px;background:var(--surface)}
+.segv button{width:30px;height:26px;border:0;border-radius:6px;background:none;color:var(--muted);display:grid;place-items:center;cursor:pointer;padding:0}
+.segv button .i{width:16px;height:16px}
+.segv button.on{background:color-mix(in srgb,var(--text) 8%,transparent);color:var(--text)}
+
+/* glass surfaces */
+[data-style=glass] :is(.top,.side,.ncard,.quick,dialog,.toast,.gate-card,.acct,.search,.btn,.sel,.segv,.secbtn,.tbl-menu,.ed-find,.m-row,.card){-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur)}
+[data-style=glass] :is(.side,.ncard,.quick,.gate-card,.toast,.card){background:var(--sheen),var(--surface)}
+[data-style=glass] :is(.ncard,.quick,.gate-card,.pad){position:relative} /* .side is sticky, already a containing block */
+[data-style=glass] :is(.side,.ncard,.quick,.gate-card)::before{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;background:var(--rim);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+[data-style=glass] :is(.ncard,.quick,.gate-card,.side){border-color:transparent}
+
+/* ---------- top bar (clock top left) ---------- */
+.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+[data-style=glass] .top{background:var(--sheen),var(--surface);box-shadow:inset 0 -1px 0 rgba(255,255,255,.18),0 6px 24px -18px rgba(16,24,40,.4)}
+.top-in{height:64px;padding:0 24px;display:grid;grid-template-columns:240px minmax(0,1fr) auto;align-items:center;gap:28px}
+.clock{display:flex;flex-direction:column;justify-content:center;line-height:1.2;min-width:0;user-select:none}
+.ck-t{font-size:21px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.ck-d{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ck-s{display:none}
+.search{display:flex;align-items:center;gap:10px;height:40px;max-width:640px;width:100%;padding:0 10px 0 12px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;color:var(--muted)}
+.search:focus-within{border-color:var(--acc);background:var(--surface-solid);box-shadow:0 0 0 3px var(--acc-soft)}
+.search input{flex:1;border:0;outline:0!important;background:none;padding:0;height:100%;font-size:14px;box-shadow:none}
+.search input::-webkit-search-cancel-button{opacity:.5}
+.top-r{display:flex;align-items:center;gap:4px}
+.sync{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted);white-space:nowrap;margin-right:8px;font-variant-numeric:tabular-nums}
+.sync .dot{width:7px;height:7px;border-radius:50%;background:#22a06b;box-shadow:0 0 0 3px color-mix(in srgb,#22a06b 18%,transparent)}
+.sync[data-st=busy] .dot{background:#f5a524;box-shadow:0 0 0 3px color-mix(in srgb,#f5a524 18%,transparent);animation:pulse 1.2s ease-in-out infinite}
+.sync[data-st=err]{color:var(--red)}.sync[data-st=err] .dot{background:var(--red);box-shadow:none}
+@keyframes pulse{50%{opacity:.35}}
+.acct{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 9px 0 4px;margin-left:4px;border:1px solid var(--line);background:var(--surface);border-radius:99px;cursor:pointer;font-weight:550;font-size:13.5px;max-width:200px}
+.acct .un{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct .cv{width:15px;height:15px;color:var(--muted)}
+.av{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;flex:none;background:var(--acc);color:var(--acc-ink);font-size:13px;font-weight:650}
+.av .i{width:15px;height:15px}
+
+/* ---------- layout ---------- */
+.wrap{display:grid;grid-template-columns:240px minmax(0,1fr);gap:28px;padding:0 24px}
+.side{position:sticky;top:64px;align-self:start;max-height:calc(100dvh - 64px);overflow:auto;padding:18px 0 32px;display:flex;flex-direction:column;gap:1px;scrollbar-width:thin}
+[data-style=glass] .side{top:78px;margin-top:14px;max-height:calc(100dvh - 92px);padding:12px 8px 14px;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:650;font-size:15px;letter-spacing:-.01em;padding:2px 10px 14px}
+.logo{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--acc);color:var(--acc-ink);flex:none}
+.logo .i{width:16px;height:16px}
+.owner{margin:0 0 10px;width:100%}
+.nav{display:flex;align-items:center;gap:11px;width:100%;height:36px;padding:0 10px;border:0;background:none;border-radius:8px;cursor:pointer;text-align:left;color:var(--text-2);font-size:14px;font-weight:500;flex:none}
+.nav:hover{background:var(--hover);color:var(--text)}
+.nav.on{background:var(--acc-soft);color:var(--acc);font-weight:600}
+.nav .ic{color:var(--muted);display:grid}.nav.on .ic{color:var(--acc)}
+.nav .i{width:17px;height:17px}
 .nav .lb{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.nav .n{font-size:12px;color:var(--muted);font-weight:600}
-.side-h{display:flex;align-items:center;justify-content:space-between;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:14px 12px 4px}
-.mini{border:0;background:none;color:var(--acc);font-weight:700;font-size:12px;cursor:pointer;text-transform:none;letter-spacing:0}
-.tags{display:flex;flex-wrap:wrap;gap:5px;padding:2px 8px}
-.tagb{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:2px 9px;font-size:12.5px;cursor:pointer;color:var(--text)}
-.tagb small{color:var(--muted)}
-.tagb.on{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 15%,transparent)}
-.owner{margin:0 0 8px;width:100%}
-main{min-width:0;padding:14px 0 100px}
-.secbtn{all:unset;font:inherit;color:inherit}
-.secbtn .si{margin-right:8px}
-.m-only{display:none}
-.head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.head h1{margin:0;font-size:22px;letter-spacing:-.01em}
-.hc{font-size:14px;color:var(--muted);font-weight:600;margin-left:4px}
+.nav .n{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}.nav.on .n{color:var(--acc)}
+.side-h{display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:18px 10px 6px;flex:none}
+.mini{border:0;background:none;color:var(--acc);font:600 12px var(--font);cursor:pointer;text-transform:none;letter-spacing:0;padding:2px 6px;border-radius:5px}
+.mini:hover{background:var(--acc-soft)}
+.tags{display:flex;flex-wrap:wrap;gap:6px;padding:2px 10px 2px}
+.tagb{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 8px;border:1px solid var(--line-2);background:none;border-radius:6px;font-size:12.5px;cursor:pointer;color:var(--text-2)}
+.tagb small{color:var(--muted);font-size:11px}
+.tagb:hover{background:var(--hover)}
+.tagb.on{border-color:var(--acc);color:var(--acc);background:var(--acc-soft)}
+.side-sep{height:1px;background:var(--line-2);margin:14px 10px;flex:none}
+main{min-width:0;padding:24px 0 100px}
+.secbtn{all:unset;display:inline-flex;align-items:center;gap:10px;font:inherit;color:inherit}
+.secbtn .si{display:none}
+.secbtn .i{width:18px;height:18px}
+.m-only{display:none!important}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.head-l{min-width:0}
+.head h1{margin:0;font-size:24px;font-weight:650;letter-spacing:-.02em;line-height:1.25}
+.hc{font-size:14px;font-weight:500;color:var(--muted);font-variant-numeric:tabular-nums}
 .tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.tools select{padding:5px 9px;font-size:13px}
-.quick{margin:0 0 18px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:6px 6px 6px 16px;display:flex;align-items:center;color:var(--muted);cursor:text;font-weight:500}
-.quick span{margin-left:auto}
-.lbl{font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:6px 4px 8px}
-.empty{text-align:center;color:var(--muted);margin:50px 10px}
-/* cards */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;align-items:stretch;margin-bottom:18px}
-.grid.list{grid-template-columns:1fr;gap:10px}
-.ncard{display:flex;flex-direction:column;margin:0;min-width:0;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px 10px;cursor:pointer;box-shadow:var(--shadow);transition:box-shadow .15s,border-color .15s;overflow:hidden}
-.grid.list .ncard{margin:0}
-.ncard:hover{border-color:color-mix(in srgb,var(--text) 25%,transparent)}
-.ncard:focus-visible{outline:2px solid var(--acc)}
-.ncard.col{background:color-mix(in srgb,var(--nc) var(--na),var(--card));border-color:transparent}
-.nh{display:flex;align-items:flex-start;gap:6px}
-.nh h3{margin:2px 0 6px;font-size:15.5px;flex:1;overflow-wrap:anywhere;line-height:1.35}
-.nh .ib{width:28px;height:28px;margin:-4px -6px 0 0;font-size:18px}
-.nb{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;color:color-mix(in srgb,var(--text) 85%,transparent);max-height:15em;overflow:hidden}
-.nb a{color:var(--acc)}
+.quick{display:flex;align-items:center;gap:8px;height:50px;padding:0 8px 0 16px;margin:0 0 24px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);color:var(--muted);cursor:text;font-size:14.5px}
+.quick:hover{box-shadow:var(--shadow-h)}
+.q-ph{flex:1}
+.lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:2px 2px 10px}
+.empty{display:flex;flex-direction:column;align-items:center;gap:10px;color:var(--muted);padding:80px 16px;text-align:center}
+.empty .i{width:34px;height:34px;stroke-width:1.4;opacity:.55}
+.empty p{margin:0;max-width:360px}
+
+/* ---------- cards ---------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;align-items:stretch;margin-bottom:26px}
+.grid.list{grid-template-columns:1fr;gap:8px}
+.ncard{position:relative;display:flex;flex-direction:column;min-width:0;margin:0;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px 12px;cursor:pointer;box-shadow:var(--shadow);transition:border-color .15s,box-shadow .2s,transform .2s;overflow:hidden}
+.ncard:hover{border-color:var(--line-2);box-shadow:var(--shadow-h)}
+[data-style=glass] .ncard:hover{transform:translateY(-1px)}
+.ncard:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.ncard.col{background:var(--sheen),color-mix(in srgb,var(--nc) var(--na),var(--surface));border-color:color-mix(in srgb,var(--nc) 55%,var(--line))}
+[data-style=glass] .ncard.col{border-color:transparent}
+.nh{display:flex;align-items:flex-start;gap:8px}
+.nh h3{flex:1;margin:0 0 6px;font-size:15px;font-weight:600;line-height:1.4;letter-spacing:-.005em;overflow-wrap:anywhere}
+.ncard .fv{opacity:0;transition:opacity .15s}
+.ncard:hover .fv,.ncard:focus-within .fv,.ncard .fv.on{opacity:1}
+@media (hover:none){.ncard .fv{opacity:1}}
+.nb{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13.5px;line-height:1.55;color:var(--text-2);max-height:14em;overflow:hidden}
+.nb a,.rt a{color:var(--acc)}
 .ht{color:var(--acc);font-weight:600}
-.cl{display:flex;flex-direction:column;gap:2px;font-size:14px}
-.cli{display:flex;gap:6px;align-items:flex-start}
+.cl{display:flex;flex-direction:column;gap:3px;font-size:13.5px;color:var(--text-2)}
+.cli{display:flex;gap:8px;align-items:flex-start}
 .cli.dn span:last-child{text-decoration:line-through;color:var(--muted)}
-.cb{border:0;background:none;padding:0;cursor:pointer;font-size:15px;line-height:1.4;color:var(--muted)}
-.nf{margin-top:auto!important;padding-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12px;}
-.cat{background:color-mix(in srgb,var(--text) 8%,transparent);border-radius:99px;padding:1px 8px;font-weight:600}
-.who{font-weight:700;color:var(--acc)}
+.cb{border:0;background:none;padding:2px 0 0;cursor:pointer;color:var(--muted);display:grid}
+.cb .i{width:16px;height:16px}
+.cli.dn .cb{color:var(--acc)}
+.cl-sum{font-size:12px;color:var(--muted);margin-top:4px}
+.nf{margin-top:auto;padding-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--muted)}
+.nf-i .i{width:14px;height:14px}
+.cat{padding:1px 8px;border-radius:5px;background:color-mix(in srgb,var(--text) 7%,transparent);color:var(--text-2);font-weight:500}
+.ago{margin-left:auto;white-space:nowrap}
+.who{color:var(--acc);font-weight:600}
+/* locked note: content stays blurred until the PIN is entered */
+.pvw{position:relative;min-height:76px;border-radius:9px;overflow:hidden}
+.pv.sealed{filter:blur(7px) saturate(.7);opacity:.75;transform:scale(1.03);user-select:none;pointer-events:none}
+.seal{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;background:var(--surface-solid);border:1px solid var(--line-2);box-shadow:var(--shadow-h);font-size:12.5px;font-weight:600;color:var(--text-2);white-space:nowrap;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.seal .i{width:14px;height:14px;color:var(--acc)}
 .fab{display:none}
-/* editor dialog */
-dialog{border:0;border-radius:18px;padding:0;width:min(560px,calc(100vw - 24px));max-height:calc(100dvh - 24px);background:var(--card);color:var(--text);box-shadow:0 30px 80px rgba(0,0,0,.35)}
-dialog::backdrop{background:rgba(10,10,10,.45)}
-dialog.ed{width:min(900px,calc(100vw - 48px));height:min(780px,calc(100dvh - 48px))}
+
+/* ---------- dialogs ---------- */
+dialog{border:0;border-radius:16px;padding:0;width:min(520px,calc(100vw - 24px));max-height:calc(100dvh - 24px);background:var(--surface-solid);color:var(--text);box-shadow:0 0 0 1px var(--line-2),var(--shadow-lg)}
+[data-style=glass] dialog{background:var(--sheen),var(--surface-solid);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 0 0 1px var(--line),var(--shadow-lg)}
+dialog::backdrop{background:rgba(12,16,24,.38);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+dialog.ed{width:min(920px,calc(100vw - 48px));height:min(800px,calc(100dvh - 48px))}
 dialog.ed .ed-in{height:100%;min-height:0}
-dialog.ed.col{background:color-mix(in srgb,var(--nc) var(--na),var(--card))}
-.dlg{padding:18px;display:flex;flex-direction:column;gap:12px}
-.dlg h2{margin:0;font-size:18px}
-.ed-in{padding:14px 24px;gap:8px;min-height:min(560px,calc(100dvh - 24px))}
-.ed-bar{display:flex;align-items:center;gap:4px;margin:0 -6px}
-.ed-bar .sp,.ed-foot .sp{flex:1}
-.e-title{border:0;background:none;font-size:22px;font-weight:700;padding:6px 0;outline:0!important}
-.e-body{border:0;background:none;flex:1;min-height:300px;resize:none;padding:4px 0;font-size:16px;line-height:1.6;outline:0!important;width:100%}
-.e-body.rt{flex:1 1 0;min-height:160px;overflow:auto;padding:4px 2px;overflow-wrap:anywhere;cursor:text}
+dialog.ed.col{background:var(--sheen),color-mix(in srgb,var(--nc) var(--na),var(--surface-solid))}
+.dlg{padding:22px;display:flex;flex-direction:column;gap:14px}
+.dlg h2{margin:0;font-size:18px;font-weight:650;letter-spacing:-.01em}
+.ed-in{padding:14px 28px 18px;gap:8px;min-height:min(560px,calc(100dvh - 24px))}
+.ed-bar{display:flex;align-items:center;gap:2px;margin:0 -8px}
+.ed-bar .sp{flex:1}
+.ed-div{width:1px;height:20px;background:var(--line-2);margin:0 6px}
+.ed-bar .hb{color:var(--text-2)}
+.e-title{border:0;background:none;font-size:26px;font-weight:650;letter-spacing:-.02em;padding:10px 0 4px;outline:0!important;box-shadow:none}
+.e-title::placeholder{color:color-mix(in srgb,var(--muted) 70%,transparent)}
+.e-body{border:0;background:none;flex:1;min-height:300px;resize:none;padding:4px 0;font-size:16px;line-height:1.65;outline:0!important;width:100%}
+.e-body.rt{flex:1 1 0;min-height:160px;overflow:auto;padding:6px 2px;overflow-wrap:anywhere;cursor:text}
 .e-body.rt[contenteditable=false]{cursor:default}
 .e-body.rt:empty::before{content:attr(data-ph);color:var(--muted);pointer-events:none}
 .rt table{border-collapse:collapse;margin:6px 0;max-width:100%}
-.rt td,.rt th{border:1px solid color-mix(in srgb,var(--text) 22%,transparent);padding:4px 8px;min-width:48px;vertical-align:top;text-align:left}
-.rt th{background:color-mix(in srgb,var(--text) 7%,transparent);font-weight:700}
+.rt td,.rt th{border:1px solid color-mix(in srgb,var(--text) 20%,transparent);padding:4px 8px;min-width:48px;vertical-align:top;text-align:left}
+.rt th{background:color-mix(in srgb,var(--text) 6%,transparent);font-weight:600}
 .rt ul,.rt ol{margin:4px 0;padding-left:24px}
 .rt p{margin:0}
-.rt img{max-width:160px;max-height:120px;width:auto;height:auto;border-radius:8px;vertical-align:middle;cursor:zoom-in;margin:2px;border:1px solid color-mix(in srgb,var(--text) 15%,transparent)}
-.rt a{color:var(--acc)}
+.rt img{max-width:160px;max-height:120px;width:auto;height:auto;border-radius:8px;vertical-align:middle;cursor:zoom-in;margin:2px;border:1px solid color-mix(in srgb,var(--text) 14%,transparent)}
 .nb.rt{white-space:normal}
 .nb.rt img{max-width:90px;max-height:70px}
 .nb.rt table{font-size:12px}
-.rt-bar{display:flex;gap:4px;align-items:stretch;padding:6px 0}
+/* formatting toolbar */
+.rt-bar{display:flex;gap:2px;align-items:stretch;padding:4px;border:1px solid var(--line-2);border-radius:11px;background:color-mix(in srgb,var(--surface-solid) 70%,transparent)}
 .rt-bar[hidden]{display:none!important}
-.rt-tog{margin:4px 0 2px}
 .rt-bar>*{flex:1 1 0;min-width:0;height:32px}
 .rt-bar>.rw{flex:2.6 1 0}
-.rt-bar .tb{white-space:nowrap;font-size:13px;padding:0 4px}
-.rt-bar .rb{padding:0 2px}
-.rt-bar select{padding:4px 6px;font-size:13px;background:color-mix(in srgb,var(--card) 70%,transparent);border-radius:9px}
-.rb{border:1px solid var(--line);background:color-mix(in srgb,var(--card) 70%,transparent);color:var(--text);cursor:pointer;min-width:0;height:28px;border-radius:9px;display:inline-grid;place-items:center;font-size:14px;padding:0 6px;position:relative}
-.rb:hover{background:color-mix(in srgb,var(--text) 9%,transparent)}
-.rc input{position:absolute;left:4px;right:4px;bottom:1px;width:auto;height:5px;padding:0;border:0;border-radius:2px;opacity:1;cursor:pointer;-webkit-appearance:none;appearance:none}
+.rt-bar select{border:0;background:none;padding:0 6px;font-size:13px;border-radius:7px;cursor:pointer}
+.rt-bar select:hover{background:var(--hover)}
+.rb{border:0;background:none;color:var(--text-2);cursor:pointer;min-width:0;height:30px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:14px;padding:0 4px;position:relative}
+.rb .i{width:17px;height:17px}
+.rb:hover{background:var(--hover);color:var(--text)}
+.rb.on{background:var(--acc-soft);color:var(--acc)}
+.rt-bar .tb{font-size:13px;white-space:nowrap}
+.rc input{position:absolute;left:8px;right:8px;bottom:3px;width:auto;height:4px;padding:0;border:0;border-radius:2px;cursor:pointer;-webkit-appearance:none;appearance:none}
 .rc input::-webkit-color-swatch-wrapper{padding:0}.rc input::-webkit-color-swatch{border:0;border-radius:2px}
-.rc span{margin-top:-4px;font-weight:700}
-.rb.on{background:color-mix(in srgb,var(--acc) 22%,transparent)}
-.ed-bar .hb{font-size:20px;color:var(--text)}
-.tbl-menu{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start;padding:10px;border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--card) 85%,transparent)}
+.rc span,.rc .i{margin-top:-4px}.rc span{font-weight:700}
+.rt-tog{margin:2px 0}
+.tbl-menu{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;padding:12px;border:1px solid var(--line-2);border-radius:12px;background:var(--surface-solid);box-shadow:var(--shadow-h)}
 .tbl-new{display:flex;flex-direction:column;gap:6px}
 .tbl-grid{display:grid;grid-template-columns:repeat(var(--c),20px);gap:3px}
-.tbl-grid button{width:20px;height:20px;border:1px solid var(--line);border-radius:4px;background:var(--card);padding:0;cursor:pointer}
-.tbl-grid button.on,.tbl-grid button:hover{background:color-mix(in srgb,var(--acc) 45%,transparent);border-color:var(--acc)}
+.tbl-grid button{width:20px;height:20px;border:1px solid var(--line-2);border-radius:4px;background:var(--surface);padding:0;cursor:pointer}
+.tbl-grid button.on,.tbl-grid button:hover{background:color-mix(in srgb,var(--acc) 40%,transparent);border-color:var(--acc)}
 .tbl-ops{display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start;flex:1;min-width:220px}
 .tbl-ops>span{flex-basis:100%}
-.tbl-ops .btn{background:color-mix(in srgb,var(--card) 70%,transparent)}
-.ed-find{display:flex;align-items:center;gap:4px;padding:4px 6px;border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--card) 80%,transparent)}
-.ed-find input{flex:1;border:0;background:none;padding:6px 4px;outline:0!important}
+.ed-find{display:flex;align-items:center;gap:4px;padding:2px 4px 2px 12px;border:1px solid var(--line-2);border-radius:10px;background:var(--surface)}
+.ed-find>.i{width:16px;height:16px;color:var(--muted)}
+.ed-find input{flex:1;border:0;background:none;padding:7px 6px;outline:0!important;box-shadow:none}
+.ed-find .ib{width:30px;height:30px}
 .ed-find #f-n{min-width:4.5em;text-align:right;white-space:nowrap}
 ::highlight(fnd){background-color:color-mix(in srgb,var(--star) 45%,transparent);color:inherit}
 ::highlight(fnd-cur){background-color:var(--acc);color:var(--acc-ink)}
@@ -151,134 +281,214 @@ dialog.ed.col{background:color-mix(in srgb,var(--nc) var(--na),var(--card))}
 #zoom img{display:block;max-width:96vw;max-height:92dvh;border-radius:8px}
 #zoom .zx{position:fixed;top:14px;right:16px;width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.15);color:#fff;font-size:26px;cursor:pointer}
 .e-title:disabled,.e-body:disabled{color:var(--text);-webkit-text-fill-color:var(--text);opacity:1}
+/* checklist editor */
 .cl-ed{flex:1;min-height:200px;overflow:auto;display:flex;flex-direction:column;gap:2px}
-.cl-row{display:flex;align-items:center;gap:8px}
-.cl-row input[type=checkbox]{width:18px;height:18px;flex:none;accent-color:var(--acc)}
-.cl-row input[type=text]{flex:1;border:0;background:none;padding:6px 2px;border-bottom:1px solid transparent;border-radius:0;outline:0}
-.cl-row input[type=text]:focus{border-bottom-color:var(--line)}
+.cl-row{display:flex;align-items:center;gap:10px}
+.cl-row input[type=checkbox]{width:18px;height:18px;flex:none;accent-color:var(--acc);margin:0}
+.cl-row input[type=text]{flex:1;border:0;background:none;padding:7px 2px;border-bottom:1px solid transparent;border-radius:0;outline:0;box-shadow:none}
+.cl-row input[type=text]:focus{border-bottom-color:var(--line-2)}
 .cl-row.dn input[type=text]{text-decoration:line-through;color:var(--muted)}
-.cl-row.add span{width:18px;text-align:center;color:var(--muted)}
-.cl-done{margin:10px 0 2px}
-.x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:20px;line-height:1;padding:0 4px}
-.ed-opts{display:flex;gap:10px;align-items:center}
+.cl-row.add>span{width:18px;display:grid;place-items:center;color:var(--muted)}.cl-row.add .i{width:16px;height:16px}
+.cl-done{margin:12px 0 2px}
+.x{border:0;background:none;color:var(--muted);cursor:pointer;padding:4px;border-radius:6px;display:grid}
+.x:hover{background:var(--hover);color:var(--text)}.x .i{width:16px;height:16px}
+/* editor options */
 .ed-tog{display:block;margin:2px 0}
-.ed-tog .et{width:100%;height:20px;display:flex;align-items:center;gap:10px;background:none;border:0;padding:0;margin:0;color:var(--muted);font-size:17px;line-height:1;cursor:pointer}
-.ed-tog .et::before,.ed-tog .et::after{content:'';flex:1;height:1px;background:color-mix(in srgb,var(--text) 16%,transparent)}
-.ed-tog .et:hover{color:var(--acc)}.ed-tog .et:hover::before,.ed-tog .et:hover::after{background:var(--acc)}
-.ed-low{display:flex;flex-direction:column;gap:8px}.ed-low[hidden]{display:none}
-.ed-opts select{flex:1 1 0;min-width:0;padding:5px 9px;font-size:13px;background:color-mix(in srgb,var(--card) 70%,transparent)}
-.swatch{display:flex;gap:5px;flex-wrap:wrap}
-.swatch label{position:relative}
+.ed-tog .et{width:100%;height:20px;display:flex;align-items:center;gap:10px;background:none;border:0;padding:0;margin:0;color:var(--muted);cursor:pointer}
+.ed-tog .et .i{width:16px;height:16px}
+.ed-tog .et::before,.ed-tog .et::after{content:'';flex:1;height:1px;background:var(--line-2)}
+.ed-tog .et:hover{color:var(--acc)}.ed-tog .et:hover::before,.ed-tog .et:hover::after{background:color-mix(in srgb,var(--acc) 50%,transparent)}
+.ed-low{display:flex;flex-direction:column;gap:10px}.ed-low[hidden]{display:none}
+.ed-opts{display:flex;gap:10px;align-items:center}
+.ed-opts .sel{flex:1 1 0;min-width:0;height:32px}.ed-opts .sel select{flex:1;min-width:0}
+.ed-opts>.btn{flex:0 1 auto}
+.swatch{display:flex;gap:6px;flex-wrap:wrap}
+.swatch label{position:relative;display:grid}
 .swatch input{position:absolute;opacity:0;pointer-events:none}
-.swatch span{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;cursor:pointer;border:1px solid color-mix(in srgb,var(--text) 18%,transparent);font-size:12px;color:var(--muted)}
-.swatch input:checked+span{outline:2px solid var(--text);outline-offset:1px}
+.swatch span{display:block;width:22px;height:22px;border-radius:50%;cursor:pointer;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 16%,transparent)}
+.swatch span.none{background:linear-gradient(135deg,transparent 46%,var(--muted) 46% 54%,transparent 54%),var(--surface)}
+.swatch input:checked+span{outline:2px solid var(--text);outline-offset:2px}
 .ed-foot{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.ed-opts>.btn{flex:1 1 0}
-.ed-foot .sp{display:none}.ed-foot #e-info{flex:1 1 auto}.ed-foot .btn{flex:0 1 110px;text-align:center}
-.ed-foot .btn{background:color-mix(in srgb,var(--card) 70%,transparent)}
-.fld{display:flex;flex-direction:column;gap:6px}
-.fld>span{font-size:12.5px;font-weight:700;color:var(--muted)}
+.ed-foot .sp{display:none}.ed-foot #e-info{flex:1 1 auto}
+.fld{display:flex;flex-direction:column;gap:8px}
+.fld>span{font-size:12.5px;font-weight:600;color:var(--muted)}
+.fld[hidden]{display:none}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .seg{display:flex;gap:6px;flex-wrap:wrap}
-.seg label{flex:1;min-width:80px}
+.seg>label{flex:1;min-width:80px;position:relative}
+.seg>.btn{flex:1}
 .seg input[type=radio]{position:absolute;opacity:0;pointer-events:none}
-.seg label span{display:block;text-align:center;border:1px solid var(--line);border-radius:10px;padding:8px;cursor:pointer;font-weight:600}
-.seg input:checked+span{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 15%,transparent)}
-.dlg-f{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.seg label span{display:block;text-align:center;border:1px solid var(--line-2);border-radius:9px;padding:8px;cursor:pointer;font-weight:550;font-size:13.5px}
+.seg input:checked+span{border-color:var(--acc);background:var(--acc-soft);color:var(--acc)}
+.dlg-f{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;align-items:center}
 .dlg-f .sp{flex:1}
 .cats{display:flex;flex-direction:column;gap:6px}
 .catrow{display:flex;gap:6px;align-items:center}
-.catrow input:not(.ci){flex:1}
-.catrow .ci{width:52px;text-align:center}
-.check{display:flex;align-items:center;gap:8px;font-weight:600}
-.check input{width:18px;height:18px}
-.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:9px 16px;border-radius:99px;font-size:14px;font-weight:600;z-index:60;box-shadow:0 10px 30px rgba(0,0,0,.25);display:flex;gap:12px;align-items:center;max-width:calc(100vw - 32px);white-space:nowrap}
-.toast button{border:0;background:none;color:var(--acc);font-weight:700;cursor:pointer;padding:0}
+.catrow input{flex:1}
+.catrow .ci{width:34px;display:grid;place-items:center;color:var(--muted)}
+.check{display:flex;align-items:center;gap:8px;font-weight:500}
+.check input{width:16px;height:16px;accent-color:var(--acc);margin:0}
+/* account + theme menus */
+.m-head{display:flex;align-items:center;gap:12px}
+.av.lg{width:44px;height:44px;font-size:18px}.av.lg .i{width:20px;height:20px}
+.m-row{display:flex;align-items:center;gap:12px;width:100%;padding:12px 14px;border:1px solid var(--line-2);border-radius:12px;background:var(--surface);cursor:pointer;text-align:left;color:var(--text)}
+.m-row:hover{border-color:var(--acc)}
+.m-row>.i{color:var(--acc)}
+.m-row>span{flex:1;display:flex;flex-direction:column}
+.m-row small{color:var(--muted);font-size:12.5px}
+.m-row .rt{transform:rotate(-90deg);color:var(--muted)}
+.styles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.styles label,.walls label,.accs label{position:relative}
+.styles input,.walls input,.accs input{position:absolute;opacity:0;pointer-events:none}
+.sty{display:flex;flex-direction:column;gap:1px;padding:10px;border:1px solid var(--line-2);border-radius:12px;cursor:pointer;height:100%}
+.sty b{font-size:13.5px;font-weight:600}.sty small{font-size:12px;color:var(--muted)}
+.sty i{position:relative;display:block;height:62px;border-radius:8px;margin-bottom:8px;overflow:hidden}
+.sw-plain{background:linear-gradient(90deg,#e9ebef 0 30%,transparent 30%),#f6f7f9;box-shadow:inset 0 0 0 1px #e1e4e9}
+.sw-plain::after{content:'';position:absolute;left:38%;right:10%;top:14px;height:34px;border-radius:5px;background:#fff;box-shadow:0 0 0 1px #e1e4e9}
+.sw-glass{background:var(--w-aurora-l)}
+.sw-glass::after{content:'';position:absolute;inset:12px 16px;border-radius:7px;background:rgba(255,255,255,.42);border:1px solid rgba(255,255,255,.85);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+input:checked+.sty{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-soft)}
+.walls{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.walls label{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer}
+.walls small{font-size:12px;color:var(--muted)}
+.wt{display:block;width:100%;aspect-ratio:1.4;border-radius:9px;box-shadow:inset 0 0 0 1px var(--line-2)}
+.wt[data-w=mist]{background:var(--w-mist-l)}.wt[data-w=aurora]{background:var(--w-aurora-l)}.wt[data-w=dusk]{background:var(--w-dusk-l)}.wt[data-w=ocean]{background:var(--w-ocean-l)}.wt[data-w=graphite]{background:var(--w-graphite-l)}
+[data-mode=dark] .wt[data-w=mist]{background:var(--w-mist-d)}[data-mode=dark] .wt[data-w=aurora]{background:var(--w-aurora-d)}[data-mode=dark] .wt[data-w=dusk]{background:var(--w-dusk-d)}[data-mode=dark] .wt[data-w=ocean]{background:var(--w-ocean-d)}[data-mode=dark] .wt[data-w=graphite]{background:var(--w-graphite-d)}
+input:checked+.wt{outline:2px solid var(--acc);outline-offset:2px}
+.accs{display:flex;gap:12px;flex-wrap:wrap}
+.accs span{display:block;width:28px;height:28px;border-radius:50%;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+.accs input:checked+span{outline:2px solid var(--text);outline-offset:3px}
+/* note PIN pad */
+dialog.pdlg{width:min(340px,calc(100vw - 32px))}
+.pad{padding:28px 24px 16px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px}
+.pad h2{margin:0;font-size:18px;font-weight:650;letter-spacing:-.01em}
+.pad p{margin:0}
+.pad-ic{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:var(--acc-soft);color:var(--acc);margin-bottom:10px}
+.pad-ic .i{width:24px;height:24px}
+.pad-note{margin-top:8px!important;max-width:100%;padding:4px 10px;border-radius:7px;background:var(--hover);font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pad-dots{position:relative;margin:18px 0 2px;padding:6px 10px;cursor:text}
+.pad-dots input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0;caret-color:transparent}
+.dots{display:flex;gap:14px;justify-content:center}
+.dots i{width:14px;height:14px;border-radius:50%;border:1.5px solid var(--muted);transition:background .12s,border-color .12s,transform .12s}
+.dots i.on{background:var(--acc);border-color:var(--acc);transform:scale(1.08)}
+.pad-dots:focus-within .dots i:not(.on):first-of-type,.pad-dots:focus-within .dots i.on+i:not(.on){border-color:var(--acc)}
+.pad-dots.bad .dots{animation:shake .38s}
+.pad-dots.bad .dots i{border-color:var(--red)}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.pad-err{min-height:20px;font-size:13px;color:var(--red)}
+.pad-keys{display:grid;grid-template-columns:repeat(3,66px);gap:10px;margin:6px 0 8px}
+.pad-keys button{height:52px;border-radius:14px;border:1px solid var(--line-2);background:var(--surface);font-size:20px;font-weight:500;cursor:pointer;color:var(--text);display:grid;place-items:center;padding:0;font-variant-numeric:tabular-nums;transition:transform .08s,background .12s}
+.pad-keys button:hover{background:color-mix(in srgb,var(--text) 6%,var(--surface))}
+.pad-keys button:active{transform:scale(.95)}
+.pad-keys .pk-del,.pad-keys .pk-ok{border-color:transparent;background:none;color:var(--muted)}
+.pad-keys .pk-ok{color:var(--acc)}
+.pad-keys .i{width:22px;height:22px}
+.pad-f{display:flex;justify-content:center;gap:4px;width:100%}
+.pad-acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:16px 0 6px}
+/* misc */
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:13.5px;font-weight:500;z-index:60;box-shadow:var(--shadow-lg);display:flex;gap:14px;align-items:center;max-width:calc(100vw - 32px)}
+[data-style=glass] .toast{background:var(--sheen),var(--surface-solid);color:var(--text);box-shadow:0 0 0 1px var(--line),var(--shadow-lg)}
+.toast button{border:0;background:none;color:var(--acc);font-weight:600;cursor:pointer;padding:0}
+[data-mode=light]:not([data-style=glass]) .toast button{color:color-mix(in srgb,var(--acc) 55%,#fff)}
 .toast[hidden]{display:none}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
 .users{width:100%;border-collapse:collapse}
-.users th,.users td{padding:9px 12px;border-top:1px solid var(--line);text-align:left;font-size:14px}
-.users th{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
-.users tr.click{cursor:pointer}.users tr.click:hover td{background:var(--soft)}
-.num{text-align:right!important}
-/* gate (same as Planner, warm colours) */
-.gate{position:fixed;inset:0;display:grid;place-items:center;padding:16px;background:radial-gradient(1100px 700px at 10% 0%,#c9790a 0%,transparent 60%),radial-gradient(900px 600px at 100% 100%,#8a3fd1 0%,transparent 55%),linear-gradient(160deg,#2a1d10,#141018)}
-.gate-card{width:min(380px,100%);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border-radius:24px;padding:34px 26px 24px;text-align:center;color:#fff;box-shadow:0 30px 80px rgba(0,0,0,.35)}
-.gate .logo{width:68px;height:68px;border-radius:20px;font-size:34px;margin:0 auto 12px}
-.gate h1{margin:0;font-size:27px}
-.gate-sub{margin:4px 0 22px;color:rgba(255,255,255,.75)}
-.gate-field{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.22);border-radius:14px;padding:4px 14px;text-align:left;margin-bottom:10px}
-.gate-field:focus-within{border-color:#ffc56b;box-shadow:0 0 0 3px rgba(255,197,107,.3)}
-.gate-field input{flex:1;background:none;border:0;outline:0!important;color:#fff;font-size:16px;padding:10px 0}
-.gate-field input::placeholder{color:rgba(255,255,255,.6)}
-.mask-wrap{position:relative;flex:1;display:block;min-width:0}
-.mask-wrap input,#user-mask{font:500 17px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.04em;padding:10px 0}
-.mask-wrap input{width:100%;-webkit-text-fill-color:transparent;color:transparent;caret-color:#fff}
-.mask-wrap input::placeholder{-webkit-text-fill-color:rgba(255,255,255,.6);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;letter-spacing:0}
-#user-mask{position:absolute;inset:0;pointer-events:none;color:#fff;white-space:pre;overflow:hidden}
-.gate-btn{width:100%;margin-top:4px;padding:12px;font-size:16px;font-weight:700;border-radius:14px;background:linear-gradient(135deg,#f5b335,#e07b00);border:0;color:#fff;cursor:pointer}
+.users th,.users td{padding:10px 14px;border-top:1px solid var(--line-2);text-align:left;font-size:14px}
+.users thead th{border-top:0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.users tr.click{cursor:pointer}.users tr.click:hover td{background:var(--hover)}
+.users .i{width:16px;height:16px;color:var(--muted)}
+.num{text-align:right!important;font-variant-numeric:tabular-nums}
+/* ---------- sign-in ---------- */
+.gate{position:fixed;inset:0;display:grid;place-items:center;padding:16px;overflow:auto}
+.gate-card{width:min(380px,100%);background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:34px 28px 24px;text-align:center;box-shadow:var(--shadow-lg)}
+.gate .logo{width:52px;height:52px;border-radius:15px;margin:0 auto 16px}
+.gate .logo .i{width:24px;height:24px}
+.gate h1{margin:0;font-size:24px;font-weight:650;letter-spacing:-.02em}
+.gate-sub{margin:4px 0 24px;color:var(--muted);font-size:14px}
+.gate-field{display:flex;align-items:center;gap:10px;height:46px;padding:0 14px;border:1px solid var(--line-2);border-radius:11px;background:var(--surface-solid);text-align:left;margin-bottom:10px;color:var(--muted)}
+.gate-field:focus-within{border-color:var(--acc);box-shadow:0 0 0 3px var(--acc-soft)}
+.gate-field input{flex:1;background:none;border:0;outline:0!important;box-shadow:none;color:var(--text);font-size:15.5px;padding:0;height:100%}
+.gate-field input::placeholder{color:var(--muted)}
+.mask-wrap{position:relative;flex:1;display:block;min-width:0;height:100%}
+.mask-wrap input,#user-mask{font:500 16px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.04em}
+.mask-wrap input{width:100%;-webkit-text-fill-color:transparent;color:transparent;caret-color:var(--text)}
+.mask-wrap input::placeholder{-webkit-text-fill-color:var(--muted);font-family:var(--font);letter-spacing:0;font-weight:400}
+#user-mask{position:absolute;inset:0;display:flex;align-items:center;pointer-events:none;color:var(--text);white-space:pre;overflow:hidden}
+.gate-btn{width:100%;height:46px;margin-top:4px;font-size:15px;font-weight:600;border-radius:11px;background:var(--acc);border:0;color:var(--acc-ink);cursor:pointer}
+.gate-btn:hover{background:color-mix(in srgb,var(--acc) 88%,var(--text))}
 .gate-btn:disabled{opacity:.7}
-.gate-err{color:#ffc2c2;min-height:18px;margin-top:10px;font-size:14px}
-.gate-note{color:rgba(255,255,255,.65);font-size:12.5px;margin:6px 0 0;line-height:1.5}
-.gate .check{justify-content:center;color:rgba(255,255,255,.85);font-weight:500;font-size:14px;margin:4px 0 10px}
+.gate-err{color:var(--red);min-height:18px;margin-top:10px;font-size:13.5px}
+.gate-note{color:var(--muted);font-size:12.5px;margin:6px 0 0;line-height:1.55}
+.gate-note a{color:var(--acc);text-decoration:none;font-weight:550}
+.gate .check{justify-content:center;color:var(--text-2);font-size:13.5px;margin:6px 0 12px}
+
+/* ---------- phones & small tablets ---------- */
 @media (max-width:820px){
-  .brand{width:auto}.bname,.sync{display:none}
-  .top-in{gap:10px;padding:8px 12px}
+  .top-in{height:58px;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;padding:0 12px}
+  .ck-t{font-size:17px}.ck-d{font-size:11.5px}.ck-l{display:none}.ck-s{display:inline}
+  .search{height:38px}
+  .sync{margin:0 2px}.sync .st,.acct .un,.acct .cv{display:none}
+  .acct{padding:0;border:0;background:none!important;height:auto;margin-left:2px;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  .top-r .ib{width:34px;height:34px}
   .wrap{grid-template-columns:1fr;gap:0;padding:0 12px}
   .side{display:none}
-  .side.open{display:flex;position:fixed;top:64px;left:12px;right:12px;z-index:40;max-height:calc(100dvh - 90px);overflow:auto;padding:8px;gap:1px;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 18px 50px rgba(0,0,0,.35)}
-  .side-bd{position:fixed;inset:0;z-index:35;background:rgba(0,0,0,.35)}
-  .side .nav{margin:0;padding:10px 12px;border-radius:10px}
-  .side-h{padding:12px 12px 4px}
-  .tags{padding:2px 6px 4px}
-  .side-opt{display:flex;gap:8px;padding:10px 6px 4px;border-top:1px solid var(--line);margin-top:8px}
+  .side.open{display:flex;position:fixed;top:68px;left:12px;right:12px;z-index:40;margin:0;max-height:calc(100dvh - 92px);overflow:auto;padding:8px;gap:1px;background:var(--sheen),var(--surface-solid);border:1px solid var(--line-2);border-radius:16px;box-shadow:var(--shadow-lg)}
+  .side-bd{position:fixed;inset:0;z-index:35;background:rgba(12,16,24,.32)}
+  .side .nav{height:42px;font-size:15px}
+  .side-h{padding:14px 10px 4px}
+  .side-opt{display:flex!important;gap:8px;padding:10px 4px 4px;border-top:1px solid var(--line-2);margin-top:10px}
   .side-opt select{flex:1;font-size:14px}
-  .un{display:none}
-  .secbtn{cursor:pointer;display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:7px 12px;font-size:17px}
-  .secbtn .si{margin:0}
-  .head{align-items:center}
-  main{padding-top:8px}
-  .head h1{font-size:20px}
   .hide-m,.quick{display:none!important}
-  .m-only{display:inline}.side-opt.m-only{display:flex}
-  .caret{color:var(--muted);font-size:13px}
+  .m-only{display:inline-flex!important}
+  main{padding-top:12px}
+  .head{align-items:center;margin-bottom:12px}
+  .head-l{flex:1;min-width:0}
+  .head h1{font-size:16px;display:flex}
+  .secbtn{display:flex;flex:1;height:44px;padding:0 14px;border:1px solid var(--line);background:var(--surface);border-radius:12px;cursor:pointer;font-weight:600;min-width:0}
+  [data-style=glass] .secbtn{background:var(--sheen),var(--surface)}
+  .secbtn .si{display:grid;color:var(--acc)}
+  .secbtn .st-l{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .secbtn .caret{margin-left:auto;color:var(--muted)}
   .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
   .grid.list{grid-template-columns:1fr}
-  .ncard{padding:10px 12px 8px}
-  .fab{display:grid;place-items:center;position:fixed;right:18px;bottom:calc(20px + env(safe-area-inset-bottom));width:58px;height:58px;border-radius:18px;border:0;background:var(--acc);color:var(--acc-ink);font-size:30px;box-shadow:0 8px 24px rgba(0,0,0,.25);z-index:30;cursor:pointer}
+  .ncard{padding:12px 13px 10px;border-radius:13px}
+  .nh h3{font-size:14.5px}
+  .nb{max-height:9em;font-size:13px}
+  .ago{margin-left:0}
+  .fab{display:grid;place-items:center;position:fixed;right:18px;bottom:calc(20px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:18px;border:0;background:var(--acc);color:var(--acc-ink);box-shadow:0 10px 28px -6px color-mix(in srgb,var(--acc) 60%,transparent),0 4px 10px rgba(0,0,0,.15);z-index:30;cursor:pointer}
+  .fab .i{width:26px;height:26px;stroke-width:2}
   dialog.ed{width:100vw;max-width:100vw;height:100dvh;max-height:100dvh;border-radius:0;margin:0}
   .ed-in{padding:calc(10px + env(safe-area-inset-top)) 16px calc(12px + env(safe-area-inset-bottom))}
+  .e-title{font-size:22px}
   .two{grid-template-columns:1fr}
-  .head>div:first-child{flex:1;min-width:0}
-  .head h1{display:flex}
-  .secbtn{flex:1;justify-content:flex-start}
-  .secbtn .caret{margin-left:auto}
-  .nb{max-height:9em}
   .ed-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .ed-opts select,.ed-opts .btn{width:100%}
+  .ed-opts .sel{grid-column:1/-1}
+  .ed-opts .btn{width:100%}
   .ed-opts .swatch{grid-column:1/-1;order:-1;justify-content:space-between}
   .ed-foot{gap:8px}
   .ed-foot #e-info{flex-basis:100%;text-align:center}
-  .ed-foot .btn{flex:1}
-  .ed-foot .sp{display:none}
-  .ed-foot .btn{padding:8px 4px}
-  .ed-bar{justify-content:space-between;margin:0}.ed-bar .sp{display:none}.ed-bar .ib{width:38px;height:38px}
-  .rt-bar{display:grid;grid-template-columns:repeat(21,1fr);gap:5px}
+  .ed-foot .btn{flex:1;padding:0 4px}
+  .ed-bar{justify-content:space-between;margin:0 -4px}.ed-bar .sp,.ed-div{display:none}.ed-bar .ib{width:38px;height:38px}
+  .rt-bar{display:grid;grid-template-columns:repeat(21,1fr);gap:4px}
   .rt-bar>*{grid-column:span 3;height:34px}.rt-bar>.rw{grid-column:span 7}
   .rt-bar select{font-size:14px}
-  .ed-tog .et{height:28px;font-size:19px}
+  .ed-tog .et{height:28px}
   .tbl-menu{flex-direction:column;gap:10px}.tbl-grid{grid-template-columns:repeat(var(--c),1fr);width:100%}.tbl-grid button{width:auto;height:22px}.tbl-new{width:100%}
   .tbl-ops{min-width:0;width:100%;display:grid;grid-template-columns:1fr 1fr}.tbl-ops>span,.tbl-ops [data-v=del]{grid-column:1/-1}.tbl-ops .btn{width:100%}
-  .toast{bottom:90px}
+  .walls{grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+  .pad-keys{grid-template-columns:repeat(3,72px)}
+  .pad-keys button{height:56px}
+  .toast{bottom:92px}
 }
 </style>
 </head>
 <body>
 <div id="app"><div style="padding:40px;font-family:sans-serif;color:#888">Memuat Notes…</div></div>
 <dialog id="dlg"></dialog>
+<dialog id="pdlg" class="pdlg"></dialog>
 <noscript>Notes memerlukan JavaScript.</noscript>
 <script>// Notes — catatan dengan favorit, kategori, tag, checklist, arsip & sampah. Akun (nama pengguna + PIN) sama dengan Planner; data di Supabase (proyek saku-yuk), sinkron real time.
-const BUILD = '20261003-221034';
+const BUILD = '20261031-114714';
 const SB_URL = 'https://bbptcxpzzvgpxqylkrmw.supabase.co', SB_KEY = 'sb_publishable_Ny-WHCEZ3WmcLFsPBx9QeQ_9xgo7MxR'; // public key; tables closed, only nt_*/pl_* functions
 const ADMIN = 'admin';
 
@@ -311,13 +521,65 @@ const DEFAULT_CATS = [{ id: 'pribadi', name: 'Pribadi', icon: '🏠' }, { id: 'k
 const SORTS = { upd: 'Terakhir diubah', new: 'Terbaru dibuat', old: 'Terlama dibuat', az: 'Judul A–Z' };
 const TRASH_DAYS = 30;
 const tagsOf = d => [...new Set(((d.title || '') + ' ' + (d.body || '') + ' ' + (d.items || []).map(i => i.t).join(' ')).match(/(^|\s)#[\p{L}\p{N}_-]{2,30}/gu)?.map(t => t.trim().slice(1).toLowerCase()) || [])];
+const tagsN = n => n.data.lock ? tagsOf({ title: n.data.title }) : tagsOf(n.data); // locked notes: only the title counts, the body stays hidden
+const DAYS = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'], MONL = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+
+// ---------- icons (24px line icons, stroke = currentColor) ----------
+const ICONS = {
+  search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  note: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/>',
+  star: '<path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/>',
+  pin: '<path d="M12 17v5"/><path d="M9 10.8a2 2 0 0 1-1.1 1.8l-1.8.9A2 2 0 0 0 5 15.2v.8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.8a2 2 0 0 0-1.1-1.8l-1.8-.9a2 2 0 0 1-1.1-1.8V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/>',
+  folder: '<path d="M3.5 7.5a2 2 0 0 1 2-2h3.6l2 2h7.4a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/>',
+  hash: '<path d="M5 9h15M4 15h15M10 3.5 8 20.5M16 3.5l-2 17"/>',
+  archive: '<rect x="3" y="4" width="18" height="4.5" rx="1.2"/><path d="M5 8.5V18a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5M10 12.5h4"/>',
+  trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l.9 12.1A2 2 0 0 0 8.9 21h6.2a2 2 0 0 0 2-1.9L18 7M9 7V4.5h6V7"/>',
+  users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.6a3.5 3.5 0 0 1 0 6.8M18.5 14.6A6.5 6.5 0 0 1 21.5 20"/>',
+  inbox: '<path d="M3.5 13h4.6l1.4 3h5l1.4-3h4.6"/><path d="M6 5.5h12l2.5 7.5v5a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 18v-5z"/>',
+  check: '<rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="m8 12.2 2.8 2.8L16.2 9"/>',
+  box: '<rect x="4" y="4" width="16" height="16" rx="4"/>',
+  grid: '<rect x="4" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6"/>',
+  rows: '<rect x="4" y="4.5" width="16" height="6" rx="1.6"/><rect x="4" y="13.5" width="16" height="6" rx="1.6"/>',
+  sort: '<path d="M7 4v16M3.5 16.5 7 20l3.5-3.5M17 20V4M13.5 7.5 17 4l3.5 3.5"/>',
+  'chev-d': '<path d="m6 9 6 6 6-6"/>', 'chev-u': '<path d="m6 15 6-6 6 6"/>',
+  x: '<path d="M6 6l12 12M18 6 6 18"/>',
+  back: '<path d="M19 12H5M11 18l-6-6 6-6"/>',
+  undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+  redo: '<path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/>',
+  lock: '<rect x="4.5" y="10.5" width="15" height="10.5" rx="2.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5M12 15v2"/>',
+  unlock: '<rect x="4.5" y="10.5" width="15" height="10.5" rx="2.5"/><path d="M8 10.5V7a4 4 0 0 1 7.7-1.5M12 15v2"/>',
+  copy: '<rect x="8" y="8" width="12" height="12" rx="2.2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
+  share: '<path d="M12 3.5v11.5M8 7.5l4-4 4 4"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/>',
+  download: '<path d="M12 4v11M7 10l5 5 5-5M5 20h14"/>',
+  file: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>',
+  image: '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.6"/><path d="m20.5 16-5-5-9 8.5"/>',
+  table: '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M3.5 15h17M10 4.5v15"/>',
+  marker: '<path d="m9 11-5.5 5.5V20h8l2.5-2.5"/><path d="m21 11.5-4.3 4.3a2 2 0 0 1-2.8 0l-4.7-4.7a2 2 0 0 1 0-2.8L13.5 4"/>',
+  clear: '<path d="M4 7V5h11v2M9.5 5 7 19M13.5 13.5l6 6M19.5 13.5l-6 6"/>',
+  'al-l': '<path d="M4 6h16M4 10h10M4 14h16M4 18h10"/>', 'al-c': '<path d="M4 6h16M7 10h10M4 14h16M7 18h10"/>',
+  'al-r': '<path d="M4 6h16M10 10h10M4 14h16M10 18h10"/>', 'al-j': '<path d="M4 6h16M4 10h16M4 14h16M4 18h16"/>',
+  ul: '<path d="M9.5 6H20M9.5 12H20M9.5 18H20"/><circle cx="4.8" cy="6" r=".9"/><circle cx="4.8" cy="12" r=".9"/><circle cx="4.8" cy="18" r=".9"/>',
+  ol: '<path d="M10 6h10M10 12h10M10 18h10M4 4.5h1.5v4M4 8.5h3M4 14.2a1.5 1.5 0 0 1 3 .1c0 1.4-3 2-3 3.7h3"/>',
+  palette: '<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.2 0 1.8-.8 1.8-1.7 0-1.3-1-1.6-1-2.6 0-.9.7-1.5 1.6-1.5H16a4.5 4.5 0 0 0 4.5-4.5c0-3.7-3.8-6.7-8.5-6.7z"/><circle cx="7.8" cy="11.5" r="1"/><circle cx="10.5" cy="7.6" r="1"/><circle cx="15" cy="7.8" r="1"/>',
+  logout: '<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 16l-4-4 4-4M6 12h10"/>',
+  key: '<circle cx="8" cy="15" r="4"/><path d="m11 12 8.5-8.5M16.5 6l2.5 2.5M14.5 8l2 2"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/>',
+  pen: '<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
+  restore: '<path d="M3.5 12a8.5 8.5 0 1 0 2.5-6"/><path d="M3.5 4v4.5H8"/>',
+  del: '<path d="M21 5H9l-6 7 6 7h12a1 1 0 0 0 1-1V6a1 1 0 0 0-1-1z"/><path d="m17 9-6 6M11 9l6 6"/>',
+  shield: '<path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.4 7.5 9.5 4.3-1.1 7.5-4.9 7.5-9.5V6z"/>',
+  sliders: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>'
+};
+const ic = (n, c = '') => `<svg class="i${c ? ' ' + c : ''}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ''}</svg>`;
 
 // ---------- state ----------
 const S = {
   user: null, admin: false, pass: '', users: [], pin: '', hasPin: false, gate: null,
   items: new Map(), seq: 0, queue: new Set(),
   sec: LS.get('sec') || 'all', q: '', sort: LS.get('sort') || 'upd', layout: LS.get('layout') || 'grid', owner: '',
-  sync: { busy: false, again: false, at: null, err: '' }, edit: null, purged: false
+  sync: { busy: false, again: false, at: null, err: '' }, edit: null, purged: false,
+  unlocked: new Set() // locked notes opened with their PIN in this visit (locked again when the editor closes)
 };
 const RO = () => S.admin;
 const key = it => it.owner + '/' + it.id;
@@ -433,8 +695,9 @@ async function liveStart() {
 }
 function liveStop() { if (sb) chans.forEach(c => sb.removeChannel(c)); chans = []; }
 function ping() { for (const c of chans) try { c.send({ type: 'broadcast', event: 'chg', payload: { t: Date.now() } }); } catch {} }
-const syncText = () => S.sync.err ? '⚠ ' + S.sync.err : S.sync.busy || S.queue.size ? '⏳ Menyimpan…' : S.sync.at ? '☁ Tersinkron ' + hms(S.sync.at) : '☁ Menghubungkan…';
-function showSync() { document.querySelectorAll('.sync').forEach(e => { e.textContent = syncText(); }); }
+const syncText = () => S.sync.err ? S.sync.err : S.sync.busy || S.queue.size ? 'Menyimpan…' : S.sync.at ? 'Tersinkron ' + hms(S.sync.at).slice(0, 5) : 'Menghubungkan…';
+const syncState = () => S.sync.err ? 'err' : S.sync.busy || S.queue.size ? 'busy' : S.sync.at ? 'ok' : 'busy';
+function showSync() { document.querySelectorAll('.sync').forEach(e => { e.dataset.st = syncState(); e.title = syncText(); const t = e.querySelector('.st'); if (t) t.textContent = syncText(); }); }
 
 // ---------- login (same accounts & PIN as Planner) ----------
 const sha = async t => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)))].map(x => x.toString(16).padStart(2, '0')).join('');
@@ -496,21 +759,30 @@ function inSec(n, sec) {
   if (sec === 'pin') return !!d.pinned;
   if (sec === 'nocat') return !catOf(n);
   if (sec.startsWith('cat:')) { const c = catOf(n); return !!c && (S.admin ? c.name === sec.slice(4) : c.id === sec.slice(4)); }
-  if (sec.startsWith('tag:')) return tagsOf(d).includes(sec.slice(4));
+  if (sec.startsWith('tag:')) return tagsN(n).includes(sec.slice(4));
   return true;
 }
-function searchText(n) { const d = n.data, c = catOf(n); return [d.title, d.body, ...(d.items || []).map(i => i.t), c?.name, S.admin ? n.owner : ''].join(' ').toLowerCase(); }
+function searchText(n) { const d = n.data, c = catOf(n); return (d.lock ? [d.title, c?.name, S.admin ? n.owner : ''] : [d.title, d.body, ...(d.items || []).map(i => i.t), c?.name, S.admin ? n.owner : '']).join(' ').toLowerCase(); }
 function visible() {
   const q = S.q.trim().toLowerCase(), words = q.split(/\s+/).filter(Boolean);
   const cmp = { upd: (a, b) => b.updated - a.updated, new: (a, b) => (b.data.created || 0) - (a.data.created || 0), old: (a, b) => (a.data.created || 0) - (b.data.created || 0), az: (a, b) => (a.data.title || '').localeCompare(b.data.title || '', 'id') }[S.sort] || ((a, b) => b.updated - a.updated);
   return notes().filter(n => inSec(n, S.sec) && (!words.length || words.every(w => searchText(n).includes(w)))).sort(cmp);
 }
 const secName = sec => sec === 'all' ? 'Semua catatan' : sec === 'fav' ? 'Favorit' : sec === 'pin' ? 'Disematkan' : sec === 'arch' ? 'Arsip' : sec === 'trash' ? 'Sampah' : sec === 'nocat' ? 'Tanpa kategori'
-  : sec.startsWith('tag:') ? '#' + sec.slice(4) : (() => { const c = allCats().find(c => (S.admin ? c.name : c.id) === sec.slice(4)); return c ? catLabel(c) : 'Kategori'; })();
-
-const secIcon = sec => ({ all: '🗒', fav: '⭐', pin: '📌', arch: '🗄', trash: '🗑', nocat: '◻️', users: '👥' })[sec] || (sec.startsWith('tag:') ? '#' : allCats().find(c => (S.admin ? c.name : c.id) === sec.slice(4))?.icon || '🏷');
+  : sec.startsWith('tag:') ? '#' + sec.slice(4) : allCats().find(c => (S.admin ? c.name : c.id) === sec.slice(4))?.name || 'Kategori';
+const secIcon = sec => ic({ all: 'note', fav: 'star', pin: 'pin', arch: 'archive', trash: 'trash', nocat: 'inbox', users: 'users' }[sec] || (sec.startsWith('tag:') ? 'hash' : 'folder'));
 // page title; on phones it is the button that opens the section list (dropdown)
-const secTitle = (label, n) => `<h1><button type="button" class="secbtn" data-a="secmenu" aria-expanded="${!!S.secOpen}"><span class="si">${secIcon(S.sec)}</span>${esc(label)} <span class="hc">${n}</span><span class="caret m-only">${S.secOpen ? '▴' : '▾'}</span></button></h1>`;
+const secTitle = (label, n) => `<h1><button type="button" class="secbtn" data-a="secmenu" aria-expanded="${!!S.secOpen}"><span class="si">${secIcon(S.sec)}</span><span class="st-l">${esc(label)}</span><span class="hc">${n}</span><span class="caret m-only">${ic(S.secOpen ? 'chev-u' : 'chev-d')}</span></button></h1>`;
+
+// ---------- clock (top left of the dashboard) ----------
+const clockDate = d => `${DAYS[d.getDay()]}, ${d.getDate()} ${MONL[d.getMonth()]} ${d.getFullYear()}`;
+const clockShort = d => `${DAYS[d.getDay()].slice(0, 3)}, ${d.getDate()} ${MON[d.getMonth()]}`;
+const clockHtml = () => { const d = new Date(); return `<div class="clock" role="timer" aria-label="Jam sekarang"><span class="ck-t">${hms(d)}</span><span class="ck-d"><span class="ck-l">${clockDate(d)}</span><span class="ck-s">${clockShort(d)}</span></span></div>`; };
+function tick() {
+  const d = new Date(), t = hms(d), l = clockDate(d), s = clockShort(d);
+  document.querySelectorAll('.clock').forEach(c => { c.querySelector('.ck-t').textContent = t; c.querySelector('.ck-l').textContent = l; c.querySelector('.ck-s').textContent = s; });
+  setTimeout(tick, 1000 - (Date.now() % 1000) + 8); // land just after each new second
+}
 
 // ---------- views ----------
 function render() {
@@ -518,48 +790,52 @@ function render() {
   const ae = document.activeElement, focusId = ae && app.contains(ae) ? ae.id : null, sel = focusId && 'selectionStart' in ae ? [ae.selectionStart, ae.selectionEnd] : null;
   const y = window.scrollY;
   if (!S.user && !S.admin) { app.innerHTML = gateView(); syncMask(); setTimeout(() => ($('#pin-in') || $('#user-in'))?.focus(), 30); return; }
+  const who = S.admin ? 'Admin' : S.user;
   app.innerHTML = `<header class="top"><div class="top-in">
-      <div class="brand"><span class="logo">✎</span><span class="bname">Notes</span></div>
-      <label class="search"><span>🔍</span><input id="q" type="search" placeholder="Cari catatan…  ( / )" value="${esc(S.q)}" autocomplete="off"></label>
-      <div class="top-r"><span class="sync">${syncText()}</span><button class="chip" data-a="menu">${S.admin ? '🛡<span class="un"> Admin</span>' : '👤<span class="un"> ' + esc(S.user) + '</span>'} ▾</button></div>
+      ${clockHtml()}
+      <label class="search">${ic('search')}<input id="q" type="search" placeholder="Cari catatan" value="${esc(S.q)}" autocomplete="off"><kbd class="hide-m">/</kbd></label>
+      <div class="top-r"><span class="sync" data-st="${syncState()}" title="${esc(syncText())}"><i class="dot"></i><span class="st">${esc(syncText())}</span></span>
+        <button type="button" class="ib" data-a="theme" title="Tema">${ic('palette')}</button>
+        <button type="button" class="acct" data-a="menu" title="Akun"><span class="av">${S.admin ? ic('shield') : esc(who.slice(0, 1).toUpperCase())}</span><span class="un">${esc(who)}</span>${ic('chev-d', 'cv')}</button></div>
     </div></header>
     <div class="wrap">${S.secOpen ? '<div class="side-bd" data-a="secmenu"></div>' : ''}${sideView()}<main>${S.sec === 'users' ? usersView() : listView()}</main></div>
-    ${RO() || S.sec === 'trash' || S.sec === 'users' ? '' : '<button class="fab" type="button" data-a="new" aria-label="Catatan baru">＋</button>'}`;
+    ${RO() || S.sec === 'trash' || S.sec === 'users' ? '' : `<button class="fab" type="button" data-a="new" aria-label="Catatan baru">${ic('plus')}</button>`}`;
   if (focusId) { const el = document.getElementById(focusId); if (el) { el.focus(); if (sel) try { el.setSelectionRange(...sel); } catch {} } }
   window.scrollTo(0, y);
 }
 
 function sideView() {
   const all = notes(), cnt = sec => all.filter(n => inSec(n, sec)).length;
-  const it = (sec, ic, label, n, extra = '') => `<button type="button" class="nav ${S.sec === sec ? 'on' : ''}" data-a="sec" data-v="${esc(sec)}"><span class="ic">${ic}</span><span class="lb">${esc(label)}</span>${n ? `<span class="n">${n}</span>` : ''}${extra}</button>`;
+  const it = (sec, label, n) => `<button type="button" class="nav ${S.sec === sec ? 'on' : ''}" data-a="sec" data-v="${esc(sec)}"><span class="ic">${secIcon(sec)}</span><span class="lb">${esc(label)}</span>${n ? `<span class="n">${n}</span>` : ''}</button>`;
   const cs = allCats(), tags = {};
-  for (const n of all) if (!n.data.trashed && !n.data.archived) for (const t of tagsOf(n.data)) tags[t] = (tags[t] || 0) + 1;
+  for (const n of all) if (!n.data.trashed && !n.data.archived) for (const t of tagsN(n)) tags[t] = (tags[t] || 0) + 1;
   const tagList = Object.entries(tags).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0])).slice(0, 30);
   return `<aside class="side${S.secOpen ? ' open' : ''}">
-    ${S.admin ? `<select id="owner" class="owner"><option value="">Semua pengguna (${S.users.length})</option>${S.users.map(u => `<option value="${esc(u.owner)}"${S.owner === u.owner ? ' selected' : ''}>👤 ${esc(u.owner)}</option>`).join('')}</select>` : ''}
-    ${it('all', '🗒', 'Semua catatan', cnt('all'))}
-    ${it('fav', '⭐', 'Favorit', cnt('fav'))}
-    ${it('pin', '📌', 'Disematkan', cnt('pin'))}
-    <div class="side-h">Kategori${RO() ? '' : '<button type="button" class="mini" data-a="cats" title="Atur kategori">Atur</button>'}</div>
-    ${cs.map(c => it('cat:' + (S.admin ? c.name : c.id), c.icon || '🏷', c.name, cnt('cat:' + (S.admin ? c.name : c.id)))).join('')}
-    ${it('nocat', '◻️', 'Tanpa kategori', cnt('nocat'))}
-    ${tagList.length ? `<div class="side-h">Tag</div><div class="tags">${tagList.map(([t, n]) => `<button type="button" class="tagb ${S.sec === 'tag:' + t ? 'on' : ''}" data-a="sec" data-v="tag:${esc(t)}">#${esc(t)} <small>${n}</small></button>`).join('')}</div>` : ''}
-    <div class="side-h"></div>
-    ${it('arch', '🗄', 'Arsip', cnt('arch'))}
-    ${it('trash', '🗑', 'Sampah', cnt('trash'))}
-    ${S.admin ? it('users', '👥', 'Pengguna', S.users.length) : ''}
-    <div class="m-only side-opt"><select id="sort2" title="Urutkan">${Object.entries(SORTS).map(([k, l]) => `<option value="${k}"${S.sort === k ? ' selected' : ''}>↕ ${l}</option>`).join('')}</select>
-      <button type="button" class="btn sm" data-a="layout">${S.layout === 'grid' ? '☰ Daftar' : '▦ Kotak'}</button></div>
+    <div class="brand hide-m"><span class="logo">${ic('pen')}</span><span>Notes</span></div>
+    ${S.admin ? `<select id="owner" class="owner"><option value="">Semua pengguna (${S.users.length})</option>${S.users.map(u => `<option value="${esc(u.owner)}"${S.owner === u.owner ? ' selected' : ''}>${esc(u.owner)}</option>`).join('')}</select>` : ''}
+    ${it('all', 'Semua catatan', cnt('all'))}
+    ${it('fav', 'Favorit', cnt('fav'))}
+    ${it('pin', 'Disematkan', cnt('pin'))}
+    <div class="side-h"><span>Kategori</span>${RO() ? '' : '<button type="button" class="mini" data-a="cats" title="Atur kategori">Atur</button>'}</div>
+    ${cs.map(c => it('cat:' + (S.admin ? c.name : c.id), c.name, cnt('cat:' + (S.admin ? c.name : c.id)))).join('')}
+    ${it('nocat', 'Tanpa kategori', cnt('nocat'))}
+    ${tagList.length ? `<div class="side-h"><span>Tag</span></div><div class="tags">${tagList.map(([t, n]) => `<button type="button" class="tagb ${S.sec === 'tag:' + t ? 'on' : ''}" data-a="sec" data-v="tag:${esc(t)}">#${esc(t)}<small>${n}</small></button>`).join('')}</div>` : ''}
+    <div class="side-sep"></div>
+    ${it('arch', 'Arsip', cnt('arch'))}
+    ${it('trash', 'Sampah', cnt('trash'))}
+    ${S.admin ? it('users', 'Pengguna', S.users.length) : ''}
+    <div class="m-only side-opt"><select id="sort2" title="Urutkan">${Object.entries(SORTS).map(([k, l]) => `<option value="${k}"${S.sort === k ? ' selected' : ''}>${l}</option>`).join('')}</select>
+      <button type="button" class="btn sm" data-a="layout">${ic(S.layout === 'grid' ? 'rows' : 'grid')}${S.layout === 'grid' ? 'Daftar' : 'Kotak'}</button></div>
   </aside>`;
 }
 
 function preview(n) {
-  const d = n.data;
+  const d = n.data, still = RO() || d.trashed || d.lock;
   if (d.type === 'list') {
     const items = d.items || [], open = items.filter(i => !i.d), done = items.filter(i => i.d);
     const show = [...open.slice(0, 8), ...(open.length < 8 ? done.slice(0, 8 - open.length) : [])];
-    return `<div class="cl">${show.map(i => { const ix = items.indexOf(i); return `<div class="cli ${i.d ? 'dn' : ''}">${RO() || d.trashed ? `<span class="cb">${i.d ? '☑' : '☐'}</span>` : `<button type="button" class="cb" data-a="ctog" data-k="${key(n)}" data-v="${ix}" aria-label="Centang">${i.d ? '☑' : '☐'}</button>`}<span>${esc(i.t)}</span></div>`; }).join('')}
-      ${items.length > show.length ? `<div class="muted small">+${items.length - show.length} lainnya</div>` : ''}${items.length ? `<div class="muted small">☑ ${done.length}/${items.length} selesai</div>` : ''}</div>`;
+    return `<div class="cl">${show.map(i => { const ix = items.indexOf(i); return `<div class="cli ${i.d ? 'dn' : ''}">${still ? `<span class="cb">${ic(i.d ? 'check' : 'box')}</span>` : `<button type="button" class="cb" data-a="ctog" data-k="${key(n)}" data-v="${ix}" aria-label="Centang">${ic(i.d ? 'check' : 'box')}</button>`}<span>${esc(i.t)}</span></div>`; }).join('')}
+      ${items.length > show.length ? `<div class="muted small">+${items.length - show.length} lainnya</div>` : ''}${items.length ? `<div class="cl-sum">${done.length}/${items.length} selesai</div>` : ''}</div>`;
   }
   const b = (d.body || '').trim(); if (!b && !/<img/.test(d.html || '')) return '';
   if (d.html && d.html.replace(/src="data:[^"]*"/g, '').length < 40000) return `<div class="nb rt">${cleanHtml(d.html)}</div>`;
@@ -568,57 +844,58 @@ function preview(n) {
 }
 function card(n) {
   const d = n.data, c = catOf(n), col = COLORS[d.color] ? d.color : '';
-  const trash = !!d.trashed, act = !RO() && !trash;
-  return `<article class="ncard ${col ? 'col' : ''}" style="--nc:${COLORS[col][1]}" data-a="open" data-k="${key(n)}" tabindex="0">
-    <div class="nh"><h3>${esc(d.title || (d.type === 'list' ? 'Checklist' : '(tanpa judul)'))}</h3>
-      ${act ? `<button type="button" class="ib ${d.fav ? 'on' : ''}" data-a="fav" data-k="${key(n)}" title="${d.fav ? 'Hapus dari favorit' : 'Jadikan favorit'}">${d.fav ? '★' : '☆'}</button>` : d.fav ? '<span class="ib on">★</span>' : ''}</div>
-    ${preview(n)}
-    <div class="nf">${d.pinned ? '<span title="Disematkan">📌</span>' : ''}${S.admin ? `<span class="who">👤 ${esc(n.owner)}</span>` : ''}${c ? `<span class="cat">${esc(catLabel(c))}</span>` : ''}
-      <span class="muted">${trash ? `Dihapus ${ago(d.trashed)}` : ago(n.updated)}</span></div>
+  const trash = !!d.trashed, act = !RO() && !trash, lk = !!d.lock;
+  const pv = lk ? `<div class="pv sealed" aria-hidden="true">${preview(n) || '<div class="nb">Catatan ini dikunci dengan PIN.</div>'}</div><div class="seal">${ic('lock')}<span>Terkunci</span></div>` : preview(n);
+  return `<article class="ncard ${col ? 'col' : ''}${lk ? ' locked' : ''}" style="--nc:${COLORS[col][1]}" data-a="open" data-k="${key(n)}" tabindex="0">
+    <div class="nh"><h3>${esc(d.title || (d.type === 'list' ? 'Checklist' : 'Tanpa judul'))}</h3>
+      ${act ? `<button type="button" class="ib sm fv ${d.fav ? 'on' : ''}" data-a="fav" data-k="${key(n)}" title="${d.fav ? 'Hapus dari favorit' : 'Jadikan favorit'}">${ic('star')}</button>` : d.fav ? `<span class="ib sm fv on">${ic('star')}</span>` : ''}</div>
+    ${lk ? `<div class="pvw">${pv}</div>` : pv}
+    <div class="nf">${d.pinned ? `<span class="nf-i" title="Disematkan">${ic('pin')}</span>` : ''}${lk ? `<span class="nf-i" title="Terkunci PIN">${ic('lock')}</span>` : ''}${S.admin ? `<span class="who">${esc(n.owner)}</span>` : ''}${c ? `<span class="cat">${esc(c.name)}</span>` : ''}
+      <span class="ago">${trash ? `Dihapus ${ago(d.trashed)}` : ago(n.updated)}</span></div>
   </article>`;
 }
 function listView() {
   const list = visible(), pinned = S.sec === 'trash' ? [] : list.filter(n => n.data.pinned), rest = S.sec === 'trash' ? list : list.filter(n => !n.data.pinned);
   const grid = arr => `<div class="grid ${S.layout}">${arr.map(card).join('')}</div>`;
   const total = notes().filter(n => !n.data.trashed).length;
-  const empty = S.q ? `Tidak ada catatan yang cocok dengan “${esc(S.q)}”.` : S.sec === 'trash' ? 'Sampah kosong.' : S.sec === 'fav' ? 'Belum ada favorit. Ketuk ☆ di catatan untuk menandainya.' : S.sec === 'arch' ? 'Belum ada catatan yang diarsipkan.'
-    : !total ? (S.admin ? 'Belum ada catatan dari pengguna mana pun.' : 'Belum ada catatan. Tekan ＋ untuk menulis catatan pertama.') : 'Tidak ada catatan di sini.';
-  return `<div class="head"><div>${secTitle(secName(S.sec).replace(/^\p{Extended_Pictographic}\S*\s/u, ''), list.length)}
+  const empty = S.q ? `Tidak ada catatan yang cocok dengan “${esc(S.q)}”.` : S.sec === 'trash' ? 'Sampah kosong.' : S.sec === 'fav' ? 'Belum ada favorit. Tandai catatan dengan ikon bintang.' : S.sec === 'arch' ? 'Belum ada catatan yang diarsipkan.'
+    : !total ? (S.admin ? 'Belum ada catatan dari pengguna mana pun.' : 'Belum ada catatan. Mulai dengan menulis catatan pertama.') : 'Tidak ada catatan di sini.';
+  return `<div class="head"><div class="head-l">${secTitle(secName(S.sec), list.length)}
       ${S.sec === 'trash' ? `<div class="muted small">Catatan di sampah terhapus permanen setelah ${TRASH_DAYS} hari.</div>` : ''}</div>
     <div class="tools">${S.sec === 'trash' && list.length && !RO() ? '<button type="button" class="btn danger sm" data-a="emptytrash">Kosongkan sampah</button>' : ''}
-      <select id="sort" class="hide-m" title="Urutkan">${Object.entries(SORTS).map(([k, l]) => `<option value="${k}"${S.sort === k ? ' selected' : ''}>${l}</option>`).join('')}</select>
-      <button type="button" class="btn sm hide-m" data-a="layout" title="Ganti tampilan">${S.layout === 'grid' ? '☰ Daftar' : '▦ Kotak'}</button>
-      ${RO() || S.sec === 'trash' ? '' : '<button type="button" class="btn primary sm hide-m" data-a="new">＋ Catatan baru</button>'}</div></div>
-    ${!RO() && S.sec !== 'trash' && S.sec !== 'arch' ? `<div class="quick" data-a="new">Tulis catatan…<span><button type="button" class="ib" data-a="newlist" title="Checklist baru">☑</button></span></div>` : ''}
-    ${!list.length ? `<p class="empty">${empty}</p>` : pinned.length ? `<div class="lbl">📌 Disematkan</div>${grid(pinned)}${rest.length ? `<div class="lbl">Lainnya</div>${grid(rest)}` : ''}` : grid(rest)}`;
+      <label class="sel hide-m" title="Urutkan">${ic('sort')}<select id="sort">${Object.entries(SORTS).map(([k, l]) => `<option value="${k}"${S.sort === k ? ' selected' : ''}>${l}</option>`).join('')}</select></label>
+      <div class="segv hide-m" role="group" aria-label="Tampilan"><button type="button" class="${S.layout === 'grid' ? 'on' : ''}" data-a="layout" data-v="grid" title="Kotak">${ic('grid')}</button><button type="button" class="${S.layout === 'list' ? 'on' : ''}" data-a="layout" data-v="list" title="Daftar">${ic('rows')}</button></div>
+      ${RO() || S.sec === 'trash' ? '' : `<button type="button" class="btn primary sm hide-m" data-a="new">${ic('plus')}Catatan baru</button>`}</div></div>
+    ${!RO() && S.sec !== 'trash' && S.sec !== 'arch' ? `<div class="quick" data-a="new"><span class="q-ph">Tulis catatan…</span><button type="button" class="ib" data-a="newlist" title="Checklist baru">${ic('check')}</button></div>` : ''}
+    ${!list.length ? `<div class="empty">${ic(S.q ? 'search' : 'note')}<p>${empty}</p></div>` : pinned.length ? `<div class="lbl">Disematkan</div>${grid(pinned)}${rest.length ? `<div class="lbl">Lainnya</div>${grid(rest)}` : ''}` : grid(rest)}`;
 }
 
 function usersView() {
   const rows = S.users.map(u => { const its = [...S.items.values()].filter(i => !i.deleted && i.kind === 'note' && i.owner === u.owner); return { u, n: its.filter(i => !i.data.trashed).length, fav: its.filter(i => i.data.fav && !i.data.trashed).length }; });
-  return `<div class="head"><div>${secTitle('Pengguna', S.users.length)}<div class="muted small">Akun sama dengan Planner. Klik untuk melihat catatannya.</div></div></div>
+  return `<div class="head"><div class="head-l">${secTitle('Pengguna', S.users.length)}<div class="muted small">Akun sama dengan Planner. Klik untuk melihat catatannya.</div></div></div>
     <div class="card" style="overflow-x:auto"><table class="users"><thead><tr><th>Pengguna</th><th class="num">Catatan</th><th class="num">Favorit</th><th>Terakhir aktif</th><th>PIN</th></tr></thead><tbody>
-    ${rows.map(r => `<tr class="click" data-a="seeuser" data-v="${esc(r.u.owner)}"><td><b>👤 ${esc(r.u.owner)}</b></td><td class="num">${r.n}</td><td class="num">${r.fav}</td><td class="muted">${r.u.last_seen ? fullDT(r.u.last_seen) : '—'}</td><td>${r.u.pin ? '🔒' : '<span class="muted">—</span>'}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Belum ada pengguna.</td></tr>'}
+    ${rows.map(r => `<tr class="click" data-a="seeuser" data-v="${esc(r.u.owner)}"><td><b>${esc(r.u.owner)}</b></td><td class="num">${r.n}</td><td class="num">${r.fav}</td><td class="muted">${r.u.last_seen ? fullDT(r.u.last_seen) : '—'}</td><td>${r.u.pin ? ic('lock') : '<span class="muted">—</span>'}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Belum ada pengguna.</td></tr>'}
     </tbody></table></div>`;
 }
 
 function gateView() {
   if (S.gate) { const n = S.gate.name; return `<div class="gate"><form class="gate-card" id="gate-form" autocomplete="off">
-    <div class="logo">🔒</div><h1>Notes</h1><p class="gate-sub">👤 ${esc(n.slice(0, 4) + '*'.repeat(Math.max(0, n.length - 4)))}</p>
-    <label class="gate-field"><span>🔑</span><input id="pin-in" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="12" placeholder="PIN" autocomplete="off"></label>
+    <div class="logo">${ic('lock')}</div><h1>Notes</h1><p class="gate-sub">${esc(n.slice(0, 4) + '*'.repeat(Math.max(0, n.length - 4)))}</p>
+    <label class="gate-field">${ic('key')}<input id="pin-in" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="12" placeholder="PIN akun" autocomplete="off"></label>
     <label class="check"><input type="checkbox" id="remember" checked> Tetap masuk di perangkat ini</label>
     <button class="gate-btn" type="submit">Masuk</button>
     <div class="gate-err" id="gate-err" role="alert">${esc(S.gate.msg || '')}</div>
-    <p class="gate-note"><a href="#" data-a="gateback" style="color:#fff">← Ganti nama pengguna</a></p>
+    <p class="gate-note"><a href="#" data-a="gateback">Ganti nama pengguna</a></p>
   </form></div>`; }
   const adm = normUser($('#user-in')?.value) === ADMIN;
   return `<div class="gate"><form class="gate-card" id="gate-form" autocomplete="off">
-    <div class="logo">✎</div><h1>Notes</h1><p class="gate-sub">Catatan sederhana, tersimpan di semua perangkat</p>
-    <label class="gate-field"><span>👤</span><span class="mask-wrap"><input id="user-in" name="user" type="text" placeholder="Nama pengguna" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="32" required value="${esc($('#user-in')?.value || '')}"><span id="user-mask" aria-hidden="true"></span></span></label>
-    <label class="gate-field" id="pass-row" style="${adm ? '' : 'display:none'}"><span>🔑</span><input id="pass-in" type="password" inputmode="numeric" placeholder="Password Admin" autocomplete="off"></label>
+    <div class="logo">${ic('pen')}</div><h1>Notes</h1><p class="gate-sub">Catatan pribadi, tersinkron di semua perangkat</p>
+    <label class="gate-field">${ic('user')}<span class="mask-wrap"><input id="user-in" name="user" type="text" placeholder="Nama pengguna" autocapitalize="none" autocomplete="off" autocorrect="off" spellcheck="false" maxlength="32" required value="${esc($('#user-in')?.value || '')}"><span id="user-mask" aria-hidden="true"></span></span></label>
+    <label class="gate-field" id="pass-row" style="${adm ? '' : 'display:none'}">${ic('key')}<input id="pass-in" type="password" inputmode="numeric" placeholder="Password Admin" autocomplete="off"></label>
     <label class="check"><input type="checkbox" id="remember" checked> Tetap masuk di perangkat ini</label>
     <button class="gate-btn" type="submit">Masuk</button>
     <div class="gate-err" id="gate-err" role="alert"></div>
-    <p class="gate-note">Setiap nama pengguna memiliki catatan sendiri. Nama & PIN sama dengan <a href="https://liemyo.github.io/planner/" style="color:#fff">Planner</a>. Nama yang belum pernah dipakai akan membuat akun baru.</p>
+    <p class="gate-note">Nama pengguna dan PIN sama dengan <a href="https://liemyo.github.io/planner/">Planner</a>. Nama yang belum pernah dipakai akan membuat akun baru.</p>
   </form></div>`;
 }
 function syncMask() {
@@ -641,26 +918,29 @@ function drawEditor() {
   const E = S.edit, d = E.d, ro = RO() || !!d.trashed, dis = ro ? ' disabled' : '';
   const n = E.k ? S.items.get(E.k) : null, cs = n ? cats(n.owner) : cats(), col = COLORS[d.color] ? d.color : '';
   const words = ((d.title || '') + ' ' + (d.type === 'list' ? (d.items || []).map(i => i.t).join(' ') : d.body || '')).trim().split(/\s+/).filter(Boolean).length;
+  const hideLow = LS.get('edlow') === 'hide';
   dlg().className = 'ed ' + (col ? 'col' : ''); dlg().style.setProperty('--nc', COLORS[col][1]);
   dlg().innerHTML = `<div class="dlg ed-in">
-    <div class="ed-bar"><button type="button" class="ib" data-a="close" title="Tutup (Esc)">←</button>${ro ? '' : `<button type="button" class="ib hb" data-a="undo-e" title="Undo (⌘Z / Ctrl+Z)"${E.hi > 0 ? '' : ' disabled'}>↶</button><button type="button" class="ib hb" data-a="redo-e" title="Redo (⇧⌘Z / Ctrl+Y)"${E.hi < (E.hist?.length || 1) - 1 ? '' : ' disabled'}>↷</button>`}<span class="sp"></span>
-      <button type="button" class="ib ${E.f ? 'on' : ''}" data-a="find" title="Cari teks di catatan (⌘F / Ctrl+F)">🔍</button>
-      ${ro ? (d.trashed && !RO() ? '<button type="button" class="btn sm" data-a="restore">↩ Pulihkan</button><button type="button" class="btn danger sm" data-a="purge">Hapus permanen</button>' : `<span class="muted small">${RO() ? '👤 ' + esc(n?.owner || '') + ' · hanya lihat' : 'Di sampah'}</span>`)
-      : `<button type="button" class="ib ${d.fav ? 'on' : ''}" data-a="efav" title="Favorit">${d.fav ? '★' : '☆'}</button>
-        <button type="button" class="ib ${d.pinned ? 'on' : ''}" data-a="epin" title="${d.pinned ? 'Lepas sematan' : 'Sematkan di atas'}">📌</button>
-        <button type="button" class="ib ${d.archived ? 'on' : ''}" data-a="earch" title="${d.archived ? 'Keluarkan dari arsip' : 'Arsipkan'}">🗄</button>
-        <button type="button" class="ib" data-a="etrash" title="Pindahkan ke sampah">🗑</button>`}</div>
+    <div class="ed-bar"><button type="button" class="ib" data-a="close" title="Tutup (Esc)">${ic('back')}</button>${ro ? '' : `<span class="ed-div"></span><button type="button" class="ib hb" data-a="undo-e" title="Undo (⌘Z / Ctrl+Z)"${E.hi > 0 ? '' : ' disabled'}>${ic('undo')}</button><button type="button" class="ib hb" data-a="redo-e" title="Redo (⇧⌘Z / Ctrl+Y)"${E.hi < (E.hist?.length || 1) - 1 ? '' : ' disabled'}>${ic('redo')}</button>`}<span class="sp"></span>
+      <button type="button" class="ib ${E.f ? 'on' : ''}" data-a="find" title="Cari teks di catatan (⌘F / Ctrl+F)">${ic('search')}</button>
+      ${ro ? (d.trashed && !RO() ? `<button type="button" class="btn sm" data-a="restore">${ic('restore')}Pulihkan</button><button type="button" class="btn danger sm" data-a="purge">Hapus permanen</button>` : `<span class="muted small">${RO() ? esc(n?.owner || '') + ' · hanya lihat' : 'Di sampah'}</span>`)
+      : `<button type="button" class="ib fv ${d.fav ? 'on' : ''}" data-a="efav" title="${d.fav ? 'Hapus dari favorit' : 'Favorit'}">${ic('star')}</button>
+        <button type="button" class="ib ${d.pinned ? 'on' : ''}" data-a="epin" title="${d.pinned ? 'Lepas sematan' : 'Sematkan di atas'}">${ic('pin')}</button>
+        <button type="button" class="ib ${d.lock ? 'on' : ''}" data-a="elock" title="${d.lock ? 'Kunci PIN aktif — atur' : 'Kunci dengan PIN'}">${ic(d.lock ? 'lock' : 'unlock')}</button>
+        <button type="button" class="ib ${d.archived ? 'on' : ''}" data-a="earch" title="${d.archived ? 'Keluarkan dari arsip' : 'Arsipkan'}">${ic('archive')}</button>
+        <button type="button" class="ib" data-a="etrash" title="Pindahkan ke sampah">${ic('trash')}</button>`}</div>
     ${E.f ? findBar() : ''}
     <input id="e-title" class="e-title" placeholder="Judul" maxlength="200" value="${esc(d.title)}"${dis}>
-    ${d.type === 'list' ? `<div class="cl-ed" id="cl-ed">${clRows(ro)}</div>` : (ro ? '' : rtBar()) + `<div id="e-body" class="e-body rt" contenteditable="${ro ? 'false' : 'true'}" role="textbox" aria-multiline="true" data-ph="Tulis catatan… (pakai #tag untuk menandai)">${d.html ? cleanHtml(d.html) : plainToHtml(d.body)}</div>`}
-    <div class="ed-tog"><button type="button" class="et" data-a="edlow" aria-expanded="${LS.get('edlow') !== 'hide'}" title="${LS.get('edlow') === 'hide' ? 'Tampilkan opsi' : 'Sembunyikan opsi'}">${LS.get('edlow') === 'hide' ? '⌃' : '⌄'}</button></div>
-    <div class="ed-low"${LS.get('edlow') === 'hide' ? ' hidden' : ''}><div class="ed-opts">
-      <select id="e-cat" title="Kategori"${dis}><option value="">◻️ Tanpa kategori</option>${cs.map(c => `<option value="${esc(c.id)}"${d.cat === c.id ? ' selected' : ''}>${esc(catLabel(c))}</option>`).join('')}${ro ? '' : '<option value="__new">＋ Kategori baru…</option>'}</select>
-      <div class="swatch" role="radiogroup" aria-label="Warna">${Object.entries(COLORS).map(([k, [l, c]]) => `<label title="${l}"><input type="radio" name="e-color" value="${k}"${col === k ? ' checked' : ''}${dis}><span style="background:${k ? c : 'var(--card)'}">${k ? '' : '⃠'}</span></label>`).join('')}</div>
-      ${ro ? '' : `<button type="button" class="btn sm" data-a="etype">${d.type === 'list' ? '¶ Jadikan teks' : '☑ Jadikan checklist'}</button>`}
+    ${d.type === 'list' ? `<div class="cl-ed" id="cl-ed">${clRows(ro)}</div>` : (ro ? '' : rtBar()) + `<div id="e-body" class="e-body rt" contenteditable="${ro ? 'false' : 'true'}" role="textbox" aria-multiline="true" data-ph="Tulis catatan… gunakan #tag untuk menandai">${d.html ? cleanHtml(d.html) : plainToHtml(d.body)}</div>`}
+    <div class="ed-tog"><button type="button" class="et" data-a="edlow" aria-expanded="${!hideLow}" title="${hideLow ? 'Tampilkan opsi' : 'Sembunyikan opsi'}">${ic(hideLow ? 'chev-u' : 'chev-d')}</button></div>
+    <div class="ed-low"${hideLow ? ' hidden' : ''}><div class="ed-opts">
+      <label class="sel" title="Kategori">${ic('folder')}<select id="e-cat"${dis}><option value="">Tanpa kategori</option>${cs.map(c => `<option value="${esc(c.id)}"${d.cat === c.id ? ' selected' : ''}>${esc(c.name)}</option>`).join('')}${ro ? '' : '<option value="__new">+ Kategori baru…</option>'}</select></label>
+      <div class="swatch" role="radiogroup" aria-label="Warna">${Object.entries(COLORS).map(([k, [l, c]]) => `<label title="${l}"><input type="radio" name="e-color" value="${k}"${col === k ? ' checked' : ''}${dis}><span class="${k ? '' : 'none'}" style="${k ? 'background:' + c : ''}"></span></label>`).join('')}</div>
+      ${ro ? '' : `<button type="button" class="btn sm" data-a="etype">${ic(d.type === 'list' ? 'note' : 'check')}${d.type === 'list' ? 'Jadikan teks' : 'Jadikan checklist'}</button>
+      <button type="button" class="btn sm ${d.lock ? 'on' : ''}" data-a="elock">${ic(d.lock ? 'lock' : 'unlock')}${d.lock ? 'Kunci PIN aktif' : 'Kunci dengan PIN'}</button>`}
     </div>
     <div class="ed-foot"><span class="muted small" id="e-info">${n ? 'Diubah ' + fullDT(n.updated) + ' · ' : ''}${words} kata${n ? ' · dibuat ' + fullDT(d.created || n.updated) : ''}</span><span class="sp"></span>
-      <button type="button" class="btn sm" data-a="copy">⧉ Salin</button>${navigator.share ? '<button type="button" class="btn sm" data-a="share">↗ Bagikan</button>' : ''}<button type="button" class="btn sm" data-a="pdf">📄 PDF</button><button type="button" class="btn sm" data-a="dltxt">⬇ .txt</button></div></div>
+      <button type="button" class="btn sm" data-a="copy">${ic('copy')}Salin</button>${navigator.share ? `<button type="button" class="btn sm" data-a="share">${ic('share')}Bagikan</button>` : ''}<button type="button" class="btn sm" data-a="pdf">${ic('file')}PDF</button><button type="button" class="btn sm" data-a="dltxt">${ic('download')}TXT</button></div></div>
   </div>`;
   if (E.f) runFind(0);
 }
@@ -700,14 +980,14 @@ function rtBar() { // flat list: one full row on desktop, an even 3 / 7 / 7 grid
   return `<div class="rt-bar" role="toolbar" aria-label="Format teks"${hide ? ' hidden' : ''}>
     <select id="t-font" class="rw" title="Jenis huruf">${RT_FONTS.map(([v, l]) => `<option value="${esc(v)}">${l}</option>`).join('')}</select>
     <select id="t-size" class="rw" title="Ukuran huruf"><option value="">Ukuran</option>${RT_SIZES.map(z => `<option value="${z}">${z}</option>`).join('')}</select>
-    <button type="button" class="rb rw tb" data-a="tblmenu" title="Tabel">⊞ Tabel ▾</button>
+    <button type="button" class="rb rw tb" data-a="tblmenu" title="Tabel">${ic('table')}<span>Tabel</span></button>
     ${b('fmt', '<b>B</b>', 'Tebal (⌘B)', 'bold')}${b('fmt', '<i>I</i>', 'Miring (⌘I)', 'italic')}${b('fmt', '<u>U</u>', 'Garis bawah (⌘U)', 'underline')}${b('fmt', '<s>S</s>', 'Coret', 'strikeThrough')}
-    <label class="rb rc" title="Warna teks"><span>A</span><input type="color" id="t-fc" value="#e03131"></label><label class="rb rc" title="Warna stabilo / latar teks"><span>🖍</span><input type="color" id="t-bc" value="#ffe066"></label>
-    ${b('fmt', '⌫A', 'Hapus format', 'removeFormat')}
-    ${b('fmt', '≡', 'Rata kiri', 'justifyLeft')}${b('fmt', '☰', 'Rata tengah', 'justifyCenter')}${b('fmt', '⫶≡', 'Rata kanan', 'justifyRight')}${b('fmt', '▤', 'Rata kiri-kanan', 'justifyFull')}
-    ${b('fmt', '•≡', 'Daftar berpoin', 'insertUnorderedList')}${b('fmt', '1.', 'Daftar bernomor', 'insertOrderedList')}
-    <label class="rb" title="Sisipkan gambar">🖼<input type="file" id="t-img" accept="image/*" multiple hidden></label>
-  </div><div class="ed-tog rt-tog"><button type="button" class="et" data-a="rtbar" aria-expanded="${!hide}" title="${hide ? 'Tampilkan toolbar format' : 'Sembunyikan toolbar format'}">${hide ? '⌄' : '⌃'}</button></div>`;
+    <label class="rb rc" title="Warna teks"><span>A</span><input type="color" id="t-fc" value="#e03131"></label><label class="rb rc" title="Warna stabilo / latar teks">${ic('marker')}<input type="color" id="t-bc" value="#ffe066"></label>
+    ${b('fmt', ic('clear'), 'Hapus format', 'removeFormat')}
+    ${b('fmt', ic('al-l'), 'Rata kiri', 'justifyLeft')}${b('fmt', ic('al-c'), 'Rata tengah', 'justifyCenter')}${b('fmt', ic('al-r'), 'Rata kanan', 'justifyRight')}${b('fmt', ic('al-j'), 'Rata kiri-kanan', 'justifyFull')}
+    ${b('fmt', ic('ul'), 'Daftar berpoin', 'insertUnorderedList')}${b('fmt', ic('ol'), 'Daftar bernomor', 'insertOrderedList')}
+    <label class="rb" title="Sisipkan gambar">${ic('image')}<input type="file" id="t-img" accept="image/*" multiple hidden></label>
+  </div><div class="ed-tog rt-tog"><button type="button" class="et" data-a="rtbar" aria-expanded="${!hide}" title="${hide ? 'Tampilkan toolbar format' : 'Sembunyikan toolbar format'}">${ic(hide ? 'chev-d' : 'chev-u')}</button></div>`;
 }
 function rtFocus() { // put the caret back where it was before a toolbar control took focus
   const el = $('#e-body'); if (!el) return null; const cur = getSelection();
@@ -729,7 +1009,7 @@ function rtCmd(cmd, val) {
 }
 const TBL_R = 6, TBL_C = 8;
 const tblMenu = () => `<div class="tbl-menu"><div class="tbl-new"><div class="tbl-grid" style="--c:${TBL_C}">${Array.from({ length: TBL_R * TBL_C }, (_, i) => `<button type="button" data-a="tblnew" data-v="${Math.floor(i / TBL_C) + 1}x${i % TBL_C + 1}" aria-label="Tabel ${Math.floor(i / TBL_C) + 1} x ${i % TBL_C + 1}"></button>`).join('')}</div><span class="muted small" id="tbl-sz">Pilih ukuran tabel</span></div>
-  <div class="tbl-ops"><span class="muted small">Taruh kursor di sel, lalu:</span>${[['row', '＋ Baris'], ['col', '＋ Kolom'], ['merge', '⇔ Gabung sel'], ['split', '✂ Pisah sel'], ['delrow', '− Baris'], ['delcol', '− Kolom'], ['del', '🗑 Hapus tabel']].map(([v, l]) => `<button type="button" class="btn sm" data-a="tblop" data-v="${v}">${l}</button>`).join('')}</div></div>`;
+  <div class="tbl-ops"><span class="muted small">Taruh kursor di sel, lalu:</span>${[['row', '+ Baris'], ['col', '+ Kolom'], ['merge', 'Gabung sel'], ['split', 'Pisah sel'], ['delrow', '− Baris'], ['delcol', '− Kolom'], ['del', 'Hapus tabel']].map(([v, l]) => `<button type="button" class="btn sm" data-a="tblop" data-v="${v}">${l}</button>`).join('')}</div></div>`;
 function toggleTblMenu(force) {
   const m = $('.tbl-menu'), open = force ?? !m;
   if (m && !open) m.remove(); else if (!m && open) $('.rt-bar')?.insertAdjacentHTML('afterend', tblMenu());
@@ -772,7 +1052,7 @@ function imgData(file) { // shrink photos so notes stay light: max 1600px, JPEG 
 }
 async function rtImages(files) {
   const list = [...files].filter(f => f.type.startsWith('image/')); if (!list.length) return;
-  try { const srcs = await Promise.all(list.map(imgData)); if (!rtFocus()) return; histPush(); document.execCommand('insertHTML', false, srcs.map(s => `<img src="${s}">`).join(' ')); rtChanged(); toast(srcs.length + ' gambar disisipkan 🖼'); }
+  try { const srcs = await Promise.all(list.map(imgData)); if (!rtFocus()) return; histPush(); document.execCommand('insertHTML', false, srcs.map(s => `<img src="${s}">`).join(' ')); rtChanged(); toast(srcs.length + ' gambar disisipkan'); }
   catch (e) { toast('Gagal menyisipkan gambar: ' + e.message); }
 }
 function zoomImg(src) { // full-size view on top of everything (incl. the editor dialog)
@@ -781,8 +1061,8 @@ function zoomImg(src) { // full-size view on top of everything (incl. the editor
 }
 
 // ---------- find in note ----------
-const findBar = () => `<div class="ed-find"><span aria-hidden="true">🔍</span><input id="f-q" type="text" placeholder="Cari di catatan ini…" value="${esc(S.edit.f.q)}" autocomplete="off" enterkeyhint="search"><span class="muted small" id="f-n"></span>
-  <button type="button" class="ib" data-a="fprev" title="Sebelumnya (Shift+Enter)">↑</button><button type="button" class="ib" data-a="fnext" title="Berikutnya (Enter)">↓</button><button type="button" class="ib" data-a="fclose" title="Tutup pencarian (Esc)">×</button></div>`;
+const findBar = () => `<div class="ed-find">${ic('search')}<input id="f-q" type="text" placeholder="Cari di catatan ini…" value="${esc(S.edit.f.q)}" autocomplete="off" enterkeyhint="search"><span class="muted small" id="f-n"></span>
+  <button type="button" class="ib" data-a="fprev" title="Sebelumnya (Shift+Enter)">${ic('chev-u')}</button><button type="button" class="ib" data-a="fnext" title="Berikutnya (Enter)">${ic('chev-d')}</button><button type="button" class="ib" data-a="fclose" title="Tutup pencarian (Esc)">${ic('x')}</button></div>`;
 let findT = null;
 function findSoon() { if (!S.edit?.f) return; clearTimeout(findT); findT = setTimeout(() => runFind(0, true), 150); }
 function clearFind() { if (window.CSS?.highlights) { CSS.highlights.delete('fnd'); CSS.highlights.delete('fnd-cur'); } document.querySelectorAll('.cl-row.hit').forEach(r => r.classList.remove('hit', 'cur')); }
@@ -824,10 +1104,10 @@ function closeFind() {
 
 function clRows(ro) {
   const items = S.edit.d.items || [];
-  const row = (i, ix) => `<div class="cl-row ${i.d ? 'dn' : ''}"><input type="checkbox" data-ci="${ix}"${i.d ? ' checked' : ''}${ro ? ' disabled' : ''}><input type="text" class="cl-in" data-ct="${ix}" value="${esc(i.t)}"${ro ? ' disabled' : ''}>${ro ? '' : `<button type="button" class="x" data-a="cdel" data-v="${ix}" aria-label="Hapus">×</button>`}</div>`;
+  const row = (i, ix) => `<div class="cl-row ${i.d ? 'dn' : ''}"><input type="checkbox" data-ci="${ix}"${i.d ? ' checked' : ''}${ro ? ' disabled' : ''}><input type="text" class="cl-in" data-ct="${ix}" value="${esc(i.t)}"${ro ? ' disabled' : ''}>${ro ? '' : `<button type="button" class="x" data-a="cdel" data-v="${ix}" aria-label="Hapus">${ic('x')}</button>`}</div>`;
   const open = items.map((i, ix) => [i, ix]).filter(([i]) => !i.d), done = items.map((i, ix) => [i, ix]).filter(([i]) => i.d);
-  return open.map(([i, ix]) => row(i, ix)).join('') + (ro ? '' : '<div class="cl-row add"><span>＋</span><input type="text" id="cl-new" placeholder="Tambah item… (Enter)"></div>')
-    + (done.length ? `<div class="muted small cl-done">☑ ${done.length} selesai</div>` + done.map(([i, ix]) => row(i, ix)).join('') : '');
+  return open.map(([i, ix]) => row(i, ix)).join('') + (ro ? '' : `<div class="cl-row add"><span>${ic('plus')}</span><input type="text" id="cl-new" placeholder="Tambah item… (Enter)"></div>`)
+    + (done.length ? `<div class="muted small cl-done">${done.length} selesai</div>` + done.map(([i, ix]) => row(i, ix)).join('') : '');
 }
 // ---------- undo / redo (own history: covers typing, formatting, tables, checklist, title) ----------
 let histT = null;
@@ -872,7 +1152,7 @@ function flushEdit() {
   if (!old && !d.title.trim() && !(d.body || '').trim() && !d.items.length) return; // empty new note: nothing to save
   const it = old ? { ...old, data: d } : { id: E.id, owner: S.user, kind: 'note', data: d, updated: 0, deleted: false };
   put(it, true); E.k = key(it); render();
-  const info = $('#e-info'); if (info) info.textContent = 'Tersimpan ' + hms(new Date()) + ' ✓';
+  const info = $('#e-info'); if (info) info.textContent = 'Tersimpan ' + hms(new Date());
 }
 const noteText = d => (d.title ? d.title + '\n\n' : '') + (d.type === 'list' ? (d.items || []).map(i => (i.d ? '☑ ' : '☐ ') + i.t).join('\n') : d.body || '');
 
@@ -881,10 +1161,10 @@ function openCats() {
   S.catEdit = list;
   const draw = () => {
     dlg().className = ''; dlg().style.removeProperty('--nc');
-    dlg().innerHTML = `<div class="dlg"><h2>Atur kategori</h2><p class="muted small" style="margin:0">Ikon boleh emoji. Menghapus kategori tidak menghapus catatannya — catatan menjadi “Tanpa kategori”.</p>
-      <div class="cats">${S.catEdit.map((c, i) => `<div class="catrow"><input class="ci" data-cf="icon" data-v="${i}" value="${esc(c.icon || '')}" maxlength="4" placeholder="🏷"><input data-cf="name" data-v="${i}" value="${esc(c.name)}" maxlength="40" placeholder="Nama kategori">
-        <button type="button" class="ib" data-a="catup" data-v="${i}" title="Naik"${i ? '' : ' disabled'}>↑</button><button type="button" class="x" data-a="catdel" data-v="${i}" aria-label="Hapus">×</button></div>`).join('')}</div>
-      <button type="button" class="btn" data-a="catadd">＋ Tambah kategori</button>
+    dlg().innerHTML = `<div class="dlg"><h2>Atur kategori</h2><p class="muted small" style="margin:0">Menghapus kategori tidak menghapus catatannya — catatan menjadi “Tanpa kategori”.</p>
+      <div class="cats">${S.catEdit.map((c, i) => `<div class="catrow"><span class="ci">${ic('folder')}</span><input data-cf="name" data-v="${i}" value="${esc(c.name)}" maxlength="40" placeholder="Nama kategori">
+        <button type="button" class="ib" data-a="catup" data-v="${i}" title="Naikkan"${i ? '' : ' disabled'}>${ic('chev-u')}</button><button type="button" class="ib" data-a="catdel" data-v="${i}" title="Hapus">${ic('x')}</button></div>`).join('')}</div>
+      <button type="button" class="btn" data-a="catadd">${ic('plus')}Tambah kategori</button>
       <div class="dlg-f"><button type="button" class="btn" data-a="close">Batal</button><button type="button" class="btn primary" data-a="catsave">Simpan</button></div></div>`;
   };
   S.catDraw = draw; draw(); if (!dlg().open) dlg().showModal();
@@ -892,23 +1172,129 @@ function openCats() {
 function newCatPrompt() {
   const name = (prompt('Nama kategori baru:') || '').trim().slice(0, 40); if (!name) return null;
   const exist = cats().find(c => c.name.toLowerCase() === name.toLowerCase()); if (exist) return exist.id;
-  const c = { id: 'c' + uid().slice(0, 8), name, icon: '🏷' }; saveCats([...cats(), c]); return c.id;
+  const c = { id: 'c' + uid().slice(0, 8), name, icon: '' }; saveCats([...cats(), c]); return c.id;
 }
 
 function openMenu() {
-  S.edit = null; dlg().className = ''; dlg().style.removeProperty('--nc');
-  const theme = LS.get('theme') || 'auto';
-  dlg().innerHTML = `<div class="dlg"><h2>${S.admin ? '🛡 Admin' : '👤 ' + esc(S.user)}</h2>
-    <p class="muted small" style="margin:0">${syncText()} · versi ${BUILD}</p>
-    <div class="fld"><span>Tampilan</span><div class="seg">${[['auto', 'Otomatis'], ['light', 'Terang'], ['dark', 'Gelap']].map(([v, l]) => `<label><input type="radio" name="theme" value="${v}"${theme === v ? ' checked' : ''}><span>${l}</span></label>`).join('')}</div></div>
+  S.edit = null; dlg().className = 'menu'; dlg().style.removeProperty('--nc');
+  const who = S.admin ? 'Admin' : S.user;
+  dlg().innerHTML = `<div class="dlg">
+    <div class="m-head"><span class="av lg">${S.admin ? ic('shield') : esc(who.slice(0, 1).toUpperCase())}</span><div><h2>${esc(who)}</h2><p class="muted small" style="margin:0">${esc(syncText())} · versi ${BUILD}</p></div></div>
+    <button type="button" class="m-row" data-a="theme">${ic('palette')}<span><b>Tema & tampilan</b><small>Mode terang/gelap, Liquid Glass, warna aksen</small></span>${ic('chev-d', 'rt')}</button>
     ${S.admin ? '<p class="muted small" style="margin:0">Mode Admin hanya melihat catatan semua pengguna, diperbarui real time.</p>' : `
-    <div class="fld"><span>🔒 PIN masuk</span><p class="small" style="margin:0">${S.hasPin ? '✓ PIN aktif — diminta setiap kali masuk.' : 'Belum ada PIN. Pasang PIN agar catatan tidak bisa dibuka hanya dengan nama pengguna.'} PIN ini sama dengan PIN Planner.</p>
+    <div class="fld"><span>PIN akun</span><p class="small" style="margin:0">${S.hasPin ? 'PIN aktif — diminta setiap kali masuk.' : 'Belum ada PIN. Pasang PIN agar catatan tidak bisa dibuka hanya dengan nama pengguna.'} Sama dengan PIN Planner.</p>
       ${S.hasPin ? '<input type="password" id="pin-old" inputmode="numeric" maxlength="12" placeholder="PIN saat ini" autocomplete="off">' : ''}
       <div class="two"><input type="password" id="pin-new" inputmode="numeric" maxlength="12" placeholder="PIN baru (4–12 angka)" autocomplete="new-password"><input type="password" id="pin-new2" inputmode="numeric" maxlength="12" placeholder="Ulangi PIN baru" autocomplete="new-password"></div>
       <div class="dlg-f" style="justify-content:flex-start"><button type="button" class="btn primary" data-a="pinsave">${S.hasPin ? 'Ubah PIN' : 'Pasang PIN'}</button>${S.hasPin ? '<button type="button" class="btn danger" data-a="pinoff">Hapus PIN</button>' : ''}<span class="small" id="pin-msg" style="align-self:center;color:var(--red)"></span></div></div>
-    <div class="fld"><span>Cadangan</span><div class="seg"><button type="button" class="btn" data-a="export">⬇ Ekspor JSON</button><label class="btn" style="text-align:center">⬆ Impor JSON<input type="file" id="imp" accept="application/json,.json" hidden></label></div></div>`}
-    <div class="dlg-f"><button type="button" class="btn danger" data-a="logout">Keluar</button><span class="sp"></span><button type="button" class="btn primary" data-a="close">Tutup</button></div></div>`;
+    <div class="fld"><span>Cadangan</span><div class="seg"><button type="button" class="btn" data-a="export">${ic('download')}Ekspor JSON</button><label class="btn">${ic('share')}Impor JSON<input type="file" id="imp" accept="application/json,.json" hidden></label></div></div>`}
+    <div class="dlg-f"><button type="button" class="btn danger" data-a="logout">${ic('logout')}Keluar</button><span class="sp"></span><button type="button" class="btn primary" data-a="close">Tutup</button></div></div>`;
   if (!dlg().open) dlg().showModal();
+}
+
+// ---------- themes: mode × style (solid / liquid glass) × backdrop × accent ----------
+const WALLS = [['mist', 'Kabut'], ['aurora', 'Aurora'], ['dusk', 'Senja'], ['ocean', 'Samudra'], ['graphite', 'Grafit']];
+const ACCS = [['blue', 'Biru', '#2563eb'], ['violet', 'Ungu', '#6d4fe0'], ['green', 'Hijau', '#16803c'], ['amber', 'Jingga', '#d97706'], ['rose', 'Merah', '#e11d48'], ['mono', 'Grafit', '#3f3f46']];
+const TH = () => ({ mode: LS.get('theme') || 'auto', style: LS.get('style') || 'glass', wall: LS.get('wall') || 'mist', acc: LS.get('acc') || 'blue' });
+function openTheme() {
+  S.edit = null; dlg().className = 'menu'; dlg().style.removeProperty('--nc');
+  const t = TH(), r = (name, v, cur, body, cls = '') => `<label class="${cls}"><input type="radio" name="${name}" value="${v}"${cur === v ? ' checked' : ''}>${body}</label>`;
+  dlg().innerHTML = `<div class="dlg th">
+    <h2>Tema</h2>
+    <div class="fld"><span>Mode</span><div class="seg">${[['auto', 'Otomatis'], ['light', 'Terang'], ['dark', 'Gelap']].map(([v, l]) => r('theme', v, t.mode, `<span>${l}</span>`)).join('')}</div></div>
+    <div class="fld"><span>Gaya</span><div class="styles">
+      ${r('style', 'plain', t.style, '<span class="sty"><i class="sw-plain"></i><b>Standar</b><small>Permukaan solid, bersih</small></span>')}
+      ${r('style', 'glass', t.style, '<span class="sty"><i class="sw-glass"></i><b>Liquid Glass</b><small>Kaca bening dengan efek buram</small></span>')}</div></div>
+    <div class="fld" id="wall-f"${t.style === 'glass' ? '' : ' hidden'}><span>Latar kaca</span><div class="walls">${WALLS.map(([v, l]) => r('wall', v, t.wall, `<span class="wt" data-w="${v}"></span><small>${l}</small>`)).join('')}</div></div>
+    <div class="fld"><span>Warna aksen</span><div class="accs">${ACCS.map(([v, l, c]) => r('acc', v, t.acc, `<span style="background:${c}" title="${l}"></span>`)).join('')}</div></div>
+    <div class="dlg-f"><span class="sp"></span><button type="button" class="btn primary" data-a="close">Selesai</button></div></div>`;
+  if (!dlg().open) dlg().showModal();
+}
+const darkMQ = matchMedia('(prefers-color-scheme: dark)');
+function applyTheme() {
+  const t = TH(), h = document.documentElement, dark = t.mode === 'dark' || (t.mode === 'auto' && darkMQ.matches);
+  h.dataset.mode = dark ? 'dark' : 'light'; h.dataset.style = t.style; h.dataset.wall = t.wall; h.dataset.acc = t.acc;
+  if (t.mode === 'auto') delete h.dataset.theme; else h.dataset.theme = t.mode;
+  document.querySelector('meta[name=theme-color]')?.setAttribute('content', dark ? '#0f1115' : '#f4f5f7');
+}
+darkMQ.addEventListener?.('change', applyTheme);
+
+// ---------- per-note PIN lock (4 digits) ----------
+// The note keeps a salted hash of its PIN (data.lock). Cards show the content blurred; opening asks the PIN.
+// This is a privacy screen on top of the account login/PIN, not encryption.
+const LOCK_LEN = 4, LOCK_TRIES = 5, LOCK_WAIT = 30e3;
+const lockHash = (owner, id, pin) => sha('notes-lock:' + owner + '/' + id + ':' + pin);
+const lockTries = new Map(); // note key → { n, until }
+const pdlg = () => $('#pdlg');
+let P = null;
+function openPad(o) { P = { val: '', err: '', step: 1, ...o }; drawPad(); if (!pdlg().open) pdlg().showModal(); setTimeout(() => $('#pad-in')?.focus(), 30); }
+function closePad() { P = null; if (pdlg().open) pdlg().close(); }
+function padLen() { return P.mode === 'acct' ? 12 : LOCK_LEN; }
+function drawPad() {
+  const n = P.k ? S.items.get(P.k) : null;
+  if (P.mode === 'manage') {
+    pdlg().innerHTML = `<div class="pad"><div class="pad-ic on">${ic('lock')}</div><h2>Kunci PIN aktif</h2><p class="muted small">Catatan ini selalu tampil buram dan meminta PIN 4 angka sebelum dibuka.</p>
+      <div class="pad-acts"><button type="button" class="btn" data-a="padchange">${ic('key')}Ganti PIN</button><button type="button" class="btn danger" data-a="padremove">${ic('unlock')}Hapus kunci</button></div>
+      <div class="pad-f"><button type="button" class="btn ghost" data-a="padclose">Tutup</button></div></div>`;
+    return;
+  }
+  const title = P.mode === 'unlock' ? 'Catatan terkunci' : P.mode === 'acct' ? 'Buka dengan PIN akun' : P.step === 1 ? 'Buat PIN catatan' : 'Ulangi PIN';
+  const sub = P.mode === 'unlock' ? 'Masukkan PIN 4 angka untuk membuka catatan ini.' : P.mode === 'acct' ? 'Masukkan PIN akun ' + esc(S.user) + ' (sama dengan PIN Planner).' : P.step === 1 ? 'PIN 4 angka khusus untuk catatan ini.' : 'Masukkan PIN yang sama sekali lagi.';
+  const keys = [1, 2, 3, 4, 5, 6, 7, 8, 9].map(k => `<button type="button" data-a="padkey" data-v="${k}">${k}</button>`).join('')
+    + (P.mode === 'acct' ? `<button type="button" class="pk-ok" data-a="padok" title="Buka">${ic('unlock')}</button>` : '<span></span>')
+    + '<button type="button" data-a="padkey" data-v="0">0</button>' + `<button type="button" class="pk-del" data-a="padkey" data-v="del" title="Hapus">${ic('del')}</button>`;
+  pdlg().innerHTML = `<form class="pad" id="pad-form" autocomplete="off">
+    <div class="pad-ic">${ic('lock')}</div><h2>${title}</h2><p class="muted small">${sub}</p>
+    ${n && P.mode !== 'set' ? `<p class="pad-note">${esc(n.data.title || 'Tanpa judul')}</p>` : ''}
+    <label class="pad-dots" id="pad-dots"><input id="pad-in" type="password" inputmode="${matchMedia('(pointer:coarse)').matches ? 'none' : 'numeric'}" maxlength="${padLen()}" autocomplete="off" aria-label="PIN"><span class="dots"></span></label>
+    <div class="pad-err" id="pad-err" role="alert">${esc(P.err)}</div>
+    <div class="pad-keys">${keys}</div>
+    <div class="pad-f"><button type="button" class="btn ghost" data-a="padclose">Batal</button>${P.mode === 'unlock' && !S.admin && S.hasPin ? '<button type="button" class="btn ghost" data-a="padforgot">Lupa PIN?</button>' : ''}</div>
+  </form>`;
+  padDots();
+}
+function padDots() {
+  const box = $('#pad-dots .dots'); if (!box) return; const len = P.mode === 'acct' ? Math.max(4, P.val.length) : LOCK_LEN;
+  box.innerHTML = Array.from({ length: len }, (_, i) => `<i class="${i < P.val.length ? 'on' : ''}"></i>`).join('');
+  const inp = $('#pad-in'); if (inp && inp.value !== P.val) inp.value = P.val;
+}
+function padErr(msg) { P.err = msg; P.val = ''; padDots(); const e = $('#pad-err'); if (e) e.textContent = msg; const d = $('#pad-dots'); d?.classList.remove('bad'); void d?.offsetWidth; d?.classList.add('bad'); }
+function padInput(v) {
+  if (!P || P.busy) return; P.val = v.replace(/\D/g, '').slice(0, padLen()); P.err = ''; const e = $('#pad-err'); if (e) e.textContent = ''; $('#pad-dots')?.classList.remove('bad'); padDots();
+  if (P.mode !== 'acct' && P.val.length === LOCK_LEN) padSubmit();
+}
+async function padSubmit() {
+  if (!P || P.busy) return; const pin = P.val, n = P.k ? S.items.get(P.k) : null;
+  P.busy = true;
+  try {
+    if (P.mode === 'unlock') {
+      if (!n) return closePad();
+      const t = lockTries.get(P.k) || { n: 0, until: 0 };
+      if (t.until > Date.now()) return padErr(`Terlalu banyak percobaan. Coba lagi dalam ${Math.ceil((t.until - Date.now()) / 1000)} detik.`);
+      if (await lockHash(n.owner, n.id, pin) === n.data.lock) { lockTries.delete(P.k); const then = P.then; S.unlocked.add(P.k); closePad(); then?.(); return; }
+      t.n++; if (t.n >= LOCK_TRIES) { t.n = 0; t.until = Date.now() + LOCK_WAIT; } lockTries.set(P.k, t);
+      return padErr(t.until > Date.now() ? 'Terlalu banyak percobaan. Coba lagi dalam 30 detik.' : `PIN salah. Sisa ${LOCK_TRIES - t.n} percobaan.`);
+    }
+    if (P.mode === 'set') {
+      if (P.step === 1) { P.first = pin; P.step = 2; P.val = ''; P.busy = false; drawPad(); $('#pad-in')?.focus(); return; }
+      if (pin !== P.first) { P.step = 1; P.first = ''; P.busy = false; drawPad(); return padErr('PIN tidak sama. Ulangi dari awal.'); }
+      const E = S.edit; if (!E) return closePad();
+      E.d.lock = await lockHash(S.user, E.id, pin); S.unlocked.add(S.user + '/' + E.id);
+      const chg = P.change; closePad(); editChanged(true); toast(chg ? 'PIN catatan diganti.' : 'Catatan dikunci. PIN diminta setiap kali dibuka.'); return;
+    }
+    if (P.mode === 'acct') {
+      if (!/^\d{4,12}$/.test(pin)) return padErr(PIN_MSG.format);
+      let ok = false;
+      try { const r = await rpc('pl_login', { p_owner: S.user, p_pin: pin }); if (r && !r.ok) return padErr(PIN_MSG[r.pin] || 'PIN salah.'); ok = !!r?.ok && !!r.pin; }
+      catch { const h = LS.get('u.' + S.user + '.pinhash'); ok = !!h && await pinHash(S.user, pin) === h; if (!ok) return padErr(h ? PIN_MSG.wrong : 'Tidak bisa menghubungi server.'); }
+      if (!ok) return padErr('PIN salah.');
+      const then = P.then; S.unlocked.add(P.k); lockTries.delete(P.k); closePad(); then?.(); toast('Dibuka dengan PIN akun. Ganti PIN catatan lewat tombol kunci.'); return;
+    }
+  } finally { if (P) P.busy = false; }
+}
+function openNote(n) { // locked notes ask their PIN first
+  const k = key(n);
+  if (n.data.lock && !S.unlocked.has(k)) return openPad({ mode: 'unlock', k, then: () => { const m = S.items.get(k); if (m) openEditor(m); } });
+  openEditor(n);
 }
 async function pinChange(old, nw, out) {
   out.textContent = 'Menyimpan…';
@@ -918,7 +1304,7 @@ async function pinChange(old, nw, out) {
     S.pin = nw; S.hasPin = !!nw;
     if (nw) { SS.set('pin.' + S.user, nw); LS.set('u.' + S.user + '.haspin', '1'); LS.set('u.' + S.user + '.pinhash', await pinHash(S.user, nw)); }
     else { SS.del('pin.' + S.user); LS.del('u.' + S.user + '.haspin'); LS.del('u.' + S.user + '.pinhash'); }
-    openMenu(); toast(nw ? 'PIN tersimpan ✓ — berlaku juga di Planner' : 'PIN dihapus.');
+    openMenu(); toast(nw ? 'PIN tersimpan — berlaku juga di Planner' : 'PIN dihapus.');
   } catch (e) { out.textContent = 'Tidak bisa menghubungi server (' + e.message + ').'; }
 }
 
@@ -928,7 +1314,6 @@ function toast(msg, undo) {
   t.innerHTML = esc(msg) + (undo ? ' <button type="button" data-a="undo">Urungkan</button>' : ''); S.undo = undo || null; t.hidden = false;
   clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; S.undo = null; }, undo ? 5000 : 2500);
 }
-function applyTheme() { const t = LS.get('theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; }
 function moveNote(k, patch, msg) { const n = S.items.get(k); if (!n || RO()) return; const before = { ...n.data }; setData(k, patch); toast(msg, () => setData(k, before)); }
 function download(name, text, type) { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); }
 async function exportPdf(d, n) { // real PDF file (jsPDF), long notes flow over as many pages as needed
@@ -957,6 +1342,7 @@ const A = {
   secmenu: () => { if (!matchMedia('(max-width:820px)').matches && !S.secOpen) return; S.secOpen = !S.secOpen; render(); },
   sec: el => { S.secOpen = false; S.sec = el.dataset.v; LS.set('sec', S.sec); window.scrollTo(0, 0); render(); },
   menu: () => openMenu(),
+  theme: () => openTheme(),
   close: () => dlg().close(),
   find: () => S.edit?.f ? closeFind() : openFind(),
   fnext: () => runFind(1), fprev: () => runFind(-1), fclose: () => closeFind(),
@@ -977,16 +1363,16 @@ const A = {
   logout: () => logout(),
   new: () => openEditor(null, S.sec.startsWith('cat:') && !S.admin ? { cat: S.sec.slice(4) } : S.sec === 'fav' ? { fav: true } : S.sec === 'pin' ? { pinned: true } : S.sec.startsWith('tag:') ? { body: '\n\n#' + S.sec.slice(4) } : {}),
   newlist: () => openEditor(null, { type: 'list', ...(S.sec.startsWith('cat:') && !S.admin ? { cat: S.sec.slice(4) } : {}) }),
-  open: el => { const n = S.items.get(el.dataset.k); if (n) openEditor(n); },
-  fav: el => { const n = S.items.get(el.dataset.k); if (n) { setData(el.dataset.k, { fav: !n.data.fav }); toast(n.data.fav ? 'Dihapus dari favorit' : 'Ditambahkan ke favorit ⭐'); } },
+  open: el => { const n = S.items.get(el.dataset.k); if (n) openNote(n); },
+  fav: el => { const n = S.items.get(el.dataset.k); if (n) { setData(el.dataset.k, { fav: !n.data.fav }); toast(n.data.fav ? 'Dihapus dari favorit' : 'Ditambahkan ke favorit'); } },
   ctog: el => { const n = S.items.get(el.dataset.k); if (!n) return; const items = (n.data.items || []).map(i => ({ ...i })), i = items[Number(el.dataset.v)]; if (i) { i.d = !i.d; setData(el.dataset.k, { items }); } },
-  layout: () => { S.secOpen = false; S.layout = S.layout === 'grid' ? 'list' : 'grid'; LS.set('layout', S.layout); render(); },
+  layout: el => { S.secOpen = false; S.layout = el?.dataset.v || (S.layout === 'grid' ? 'list' : 'grid'); LS.set('layout', S.layout); render(); },
   emptytrash: () => { const list = notes().filter(n => n.data.trashed); if (!list.length || !confirm(`Hapus permanen ${list.length} catatan di sampah?`)) return; for (const n of list) put({ ...n, deleted: true, data: {} }, true); render(); toast('Sampah dikosongkan.'); },
   efav: () => { S.edit.d.fav = !S.edit.d.fav; editChanged(true); },
   epin: () => { S.edit.d.pinned = !S.edit.d.pinned; editChanged(true); },
-  earch: () => { const a = !S.edit.d.archived; S.edit.d.archived = a; if (a) S.edit.d.pinned = false; S.edit.dirty = true; flushEdit(); const k = S.edit.k; dlg().close(); if (k) toast(a ? 'Diarsipkan 🗄' : 'Dikeluarkan dari arsip', () => setData(k, { archived: !a })); },
-  etrash: () => { flushEdit(); const k = S.edit.k; dlg().close(); if (k) moveNote(k, { trashed: Date.now(), pinned: false }, 'Dipindahkan ke sampah 🗑'); },
-  restore: () => { const k = S.edit.k; dlg().close(); setData(k, { trashed: null }); toast('Catatan dipulihkan ↩'); },
+  earch: () => { const a = !S.edit.d.archived; S.edit.d.archived = a; if (a) S.edit.d.pinned = false; S.edit.dirty = true; flushEdit(); const k = S.edit.k; dlg().close(); if (k) toast(a ? 'Diarsipkan' : 'Dikeluarkan dari arsip', () => setData(k, { archived: !a })); },
+  etrash: () => { flushEdit(); const k = S.edit.k; dlg().close(); if (k) moveNote(k, { trashed: Date.now(), pinned: false }, 'Dipindahkan ke sampah'); },
+  restore: () => { const k = S.edit.k; dlg().close(); setData(k, { trashed: null }); toast('Catatan dipulihkan'); },
   purge: () => { const n = S.items.get(S.edit.k); if (!n || !confirm('Hapus permanen catatan ini? Tidak bisa dikembalikan.')) return; dlg().close(); put({ ...n, deleted: true, data: {} }); toast('Dihapus permanen.'); },
   etype: () => {
     histPush(); const d = S.edit.d;
@@ -994,20 +1380,27 @@ const A = {
     else { d.html = ''; d.items = (d.body || '').split('\n').map(t => t.replace(/^\s*([-*•]|\d+[.)]|☐|☑|✓|\[ ?x?\])\s*/i, '').trim()).filter(Boolean).map(t => ({ t, d: false })); d.body = ''; d.type = 'list'; }
     editChanged(true);
   },
+  elock: () => { if (RO() || S.edit.d.trashed) return; openPad(S.edit.d.lock ? { mode: 'manage' } : { mode: 'set' }); },
+  padkey: el => { if (!P) return; const v = el.dataset.v; padInput(v === 'del' ? P.val.slice(0, -1) : P.val + v); $('#pad-in')?.focus({ preventScroll: true }); },
+  padok: () => padSubmit(),
+  padclose: () => closePad(),
+  padforgot: () => { if (!P) return; P.mode = 'acct'; P.val = ''; P.err = ''; drawPad(); $('#pad-in')?.focus(); },
+  padchange: () => { P = { mode: 'set', step: 1, val: '', err: '', change: true }; drawPad(); $('#pad-in')?.focus(); },
+  padremove: () => { if (!S.edit) return closePad(); delete S.edit.d.lock; closePad(); editChanged(true); toast('Kunci PIN dihapus dari catatan ini.'); },
   cdel: el => { histPush(); S.edit.d.items.splice(Number(el.dataset.v), 1); editChanged(true); },
-  copy: async () => { try { await navigator.clipboard.writeText(noteText(S.edit.d)); toast('Disalin ke clipboard ⧉'); } catch { toast('Tidak bisa menyalin.'); } },
+  copy: async () => { try { await navigator.clipboard.writeText(noteText(S.edit.d)); toast('Disalin ke clipboard'); } catch { toast('Tidak bisa menyalin.'); } },
   share: async () => { try { await navigator.share({ title: S.edit.d.title || 'Catatan', text: noteText(S.edit.d) }); } catch {} },
-  pdf: async el => { el.disabled = true; el.textContent = '⏳ PDF…'; try { await exportPdf(S.edit.d, S.edit.k ? S.items.get(S.edit.k) : null); toast('PDF diunduh 📄'); } catch (e) { toast('Gagal membuat PDF: ' + e.message); } el.disabled = false; el.textContent = '📄 PDF'; },
+  pdf: async el => { const h = el.innerHTML; el.disabled = true; el.textContent = 'Membuat PDF…'; try { await exportPdf(S.edit.d, S.edit.k ? S.items.get(S.edit.k) : null); toast('PDF diunduh'); } catch (e) { toast('Gagal membuat PDF: ' + e.message); } el.disabled = false; el.innerHTML = h; },
   dltxt: () => download(fileName(S.edit.d) + '.txt', noteText(S.edit.d), 'text/plain;charset=utf-8'),
   undo: () => { const u = S.undo; S.undo = null; const t = $('.toast'); if (t) t.hidden = true; if (u) u(); },
   cats: () => openCats(),
-  catadd: () => { S.catEdit.push({ id: 'c' + uid().slice(0, 8), name: '', icon: '🏷' }); S.catDraw(); document.querySelectorAll('[data-cf=name]')[S.catEdit.length - 1]?.focus(); },
+  catadd: () => { S.catEdit.push({ id: 'c' + uid().slice(0, 8), name: '', icon: '' }); S.catDraw(); document.querySelectorAll('[data-cf=name]')[S.catEdit.length - 1]?.focus(); },
   catdel: el => { S.catEdit.splice(Number(el.dataset.v), 1); S.catDraw(); },
   catup: el => { const i = Number(el.dataset.v); if (i > 0) { [S.catEdit[i - 1], S.catEdit[i]] = [S.catEdit[i], S.catEdit[i - 1]]; S.catDraw(); } },
   catsave: () => {
     const list = S.catEdit.map(c => ({ ...c, name: c.name.trim() })).filter(c => c.name);
     saveCats(list); if (S.sec.startsWith('cat:') && !list.some(c => 'cat:' + c.id === S.sec)) S.sec = 'all';
-    dlg().close(); toast('Kategori tersimpan ✓');
+    dlg().close(); toast('Kategori tersimpan');
   },
   gateback: () => { S.gate = null; LS.del('session'); render(); },
   pinsave: async () => {
@@ -1026,7 +1419,7 @@ document.addEventListener('click', ev => {
   const el = ev.target.closest('[data-a]'); if (!el || !A[el.dataset.a]) return;
   ev.preventDefault(); ev.stopPropagation(); syncRt(); A[el.dataset.a](el);
 });
-document.addEventListener('mousedown', ev => { if (ev.target.closest('.rt-bar button, .ed-find button, .tbl-menu button, .ed-bar .hb')) ev.preventDefault(); }); // keep caret/selection in the note
+document.addEventListener('mousedown', ev => { if (ev.target.closest('.rt-bar button, .ed-find button, .tbl-menu button, .ed-bar .hb, .pad-keys button')) ev.preventDefault(); }); // keep caret/selection in the note
 document.addEventListener('selectionchange', () => { const s = getSelection(), b = $('#e-body'); if (s.rangeCount && b?.isContentEditable && b.contains(s.anchorNode)) S.rtRange = s.getRangeAt(0).cloneRange(); });
 document.addEventListener('beforeinput', ev => {
   if (S.edit && (ev.inputType === 'historyUndo' || ev.inputType === 'historyRedo') && ev.target.closest?.('#dlg') && ev.target.id !== 'f-q') { ev.preventDefault(); histGo(ev.inputType === 'historyUndo' ? -1 : 1); }
@@ -1046,6 +1439,7 @@ document.addEventListener('paste', ev => { // pasted web/Word content: keep form
 document.addEventListener('input', ev => {
   const t = ev.target;
   if (t.id === 'user-in') return syncMask();
+  if (t.id === 'pad-in') return padInput(t.value);
   if (t.id === 'q') { S.q = t.value; render(); return; }
   if (S.catEdit && t.dataset.cf) { S.catEdit[Number(t.dataset.v)][t.dataset.cf] = t.value; return; }
   if (!S.edit) return;
@@ -1059,6 +1453,7 @@ document.addEventListener('change', ev => {
   if (t.id === 'sort' || t.id === 'sort2') { S.secOpen = false; S.sort = t.value; LS.set('sort', S.sort); render(); }
   if (t.id === 'owner') { S.owner = t.value; render(); }
   if (t.name === 'theme') { t.value === 'auto' ? LS.del('theme') : LS.set('theme', t.value); applyTheme(); }
+  if (t.name === 'style' || t.name === 'wall' || t.name === 'acc') { LS.set(t.name, t.value); applyTheme(); const w = $('#wall-f'); if (w) w.hidden = TH().style !== 'glass'; }
   if (S.edit) {
     if (t.id === 't-font' && t.value) { const v = t.value; t.value = ''; rtCmd('fontName', v); }
     if (t.id === 't-size' && t.value) { const v = t.value; t.value = ''; rtCmd('fontSize', v); }
@@ -1073,7 +1468,7 @@ document.addEventListener('change', ev => {
     const o = JSON.parse(txt); const list = (o.items || []).filter(i => i && (i.kind === 'note' || i.kind === 'meta') && i.data);
     if (!list.length) throw new Error('kosong');
     for (const i of list) { const id = /^[A-Za-z0-9_-]{6,64}$/.test(i.id) ? i.id : uid(), cur = S.items.get(S.user + '/' + id); const it = { id, owner: S.user, kind: i.kind, data: i.data, updated: Math.max(Date.now(), (cur?.updated || 0) + 1), deleted: false }; S.items.set(key(it), it); S.queue.add(key(it)); }
-    saveCache(); dlg().close(); render(); pushSoon(); toast(`${list.length} item diimpor ✓`);
+    saveCache(); dlg().close(); render(); pushSoon(); toast(`${list.length} item diimpor`);
   }).catch(() => alert('File tidak bisa dibaca sebagai cadangan Notes.'));
 });
 document.addEventListener('keydown', ev => {
@@ -1088,7 +1483,7 @@ document.addEventListener('keydown', ev => {
   if (ev.key === 'Backspace' && t.dataset?.ct !== undefined && !t.value) { ev.preventDefault(); histPush(); S.edit.d.items.splice(Number(t.dataset.ct), 1); editChanged(true); $('#cl-new')?.focus(); return; }
   if (ev.key === 'Enter' && t.id === 'e-title' && S.edit) { ev.preventDefault(); ($('#e-body') || $('#cl-new'))?.focus(); return; }
   if (ev.key === 'Enter' && t.classList?.contains('ncard')) { A.open(t); return; }
-  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || dlg().open;
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || dlg().open || pdlg().open;
   if (!typing && (S.user || S.admin) && !ev.metaKey && !ev.ctrlKey && !ev.altKey) {
     if (ev.key === '/') { ev.preventDefault(); $('#q')?.focus(); }
     else if ((ev.key === 'n' || ev.key === 'N') && !RO()) { ev.preventDefault(); A.new(); }
@@ -1096,6 +1491,7 @@ document.addEventListener('keydown', ev => {
 });
 document.addEventListener('submit', ev => {
   const f = ev.target; ev.preventDefault();
+  if (f.id === 'pad-form') { padSubmit(); return; }
   if (f.id === 'gate-form') {
     const btn = f.querySelector('button'); btn.disabled = true; btn.textContent = 'Membuka…';
     const pinMode = !!S.gate, name = pinMode ? S.gate.name : $('#user-in').value, pin = pinMode ? $('#pin-in').value : '';
@@ -1106,8 +1502,10 @@ document.addEventListener('submit', ev => {
   }
 });
 dlg().addEventListener('cancel', ev => { if (S.edit?.f && document.activeElement?.id === 'f-q') { ev.preventDefault(); closeFind(); } });
-dlg().addEventListener('close', () => { clearFind(); if (S.edit) flushEdit(); S.edit = null; S.catEdit = null; dlg().className = ''; render(); });
+dlg().addEventListener('close', () => { clearFind(); if (S.edit) { flushEdit(); S.unlocked.delete(S.user + '/' + S.edit.id); if (S.edit.k) S.unlocked.delete(S.edit.k); } if (pdlg().open) closePad(); S.edit = null; S.catEdit = null; dlg().className = ''; render(); });
 dlg().addEventListener('click', ev => { if (ev.target === dlg()) dlg().close(); }); // click on backdrop
+pdlg().addEventListener('click', ev => { if (ev.target === pdlg()) closePad(); });
+pdlg().addEventListener('close', () => { P = null; });
 
 // ---------- auto update + boot ----------
 async function checkUpdate() { // phones keep old copies; load the newer build when nothing is being edited
@@ -1126,7 +1524,7 @@ window.addEventListener('online', () => syncNow());
 window.addEventListener('focus', () => syncNow());
 
 function boot() {
-  applyTheme(); checkUpdate();
+  applyTheme(); checkUpdate(); tick();
   let s = null; try { s = JSON.parse(LS.get('session') || 'null'); } catch {}
   const ssUser = SS.get('user'), ssAdmin = SS.get('admin');
   if (s?.admin || ssAdmin) {
