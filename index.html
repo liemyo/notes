@@ -194,7 +194,9 @@ main{min-width:0;padding:24px 0 100px}
 .ncard:hover .fv,.ncard:focus-within .fv,.ncard .fv.on{opacity:1}
 @media (hover:none){.ncard .fv{opacity:1}}
 .nb{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13.5px;line-height:1.55;color:var(--text-2);max-height:14em;overflow:hidden}
-.nb a,.rt a{color:var(--acc)}
+.nb a,.rt a,.cli a{color:var(--acc);text-decoration:underline;text-underline-offset:2px;cursor:pointer;word-break:break-all}
+.e-body a{cursor:pointer}
+.cl-go{color:var(--acc)}.cl-go[hidden]{display:none}
 .ht{color:var(--acc);font-weight:600}
 .cl{display:flex;flex-direction:column;gap:3px;font-size:13.5px;color:var(--text-2)}
 .cli{display:flex;gap:8px;align-items:flex-start}
@@ -520,13 +522,37 @@ dialog.pdlg{width:min(340px,calc(100vw - 32px))}
 <dialog id="pdlg" class="pdlg"></dialog>
 <noscript>Notes memerlukan JavaScript.</noscript>
 <script>// Notes — catatan dengan favorit, kategori, tag, checklist, arsip & sampah. Akun (nama pengguna + PIN) sama dengan Planner; data di Supabase (proyek saku-yuk), sinkron real time.
-const BUILD = '20261103-124548';
+const BUILD = '20261103-125711';
 const SB_URL = 'https://bbptcxpzzvgpxqylkrmw.supabase.co', SB_KEY = 'sb_publishable_Ny-WHCEZ3WmcLFsPBx9QeQ_9xgo7MxR'; // public key; tables closed, only nt_*/pl_* functions
 const ADMIN = 'admin';
 
 // ---------- helpers ----------
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// ---------- links: every URL (http(s)://… or www.…) becomes a link that opens in a new tab ----------
+const URL_RE = /\b(?:https?:\/\/|www\.)[^\s<>"'`]+/gi;
+const urlTrim = u => { u = u.replace(/[.,;:!?'"»”’]+$/, ''); while (/[)\]}]$/.test(u) && (u.split(/[(\[{]/).length < u.split(/[)\]}]/).length)) u = u.slice(0, -1).replace(/[.,;:!?'"»”’]+$/, ''); return u; };
+const urlHref = u => /^www\./i.test(u) ? 'https://' + u : u;
+function urlSplit(text) { // → [[plain, url], …, [plain]] ; url already trimmed of trailing punctuation
+  const out = []; let last = 0; URL_RE.lastIndex = 0;
+  for (let m; (m = URL_RE.exec(text));) { const u = urlTrim(m[0]); if (!/^(https?:\/\/|www\.)[^/]*\w/i.test(u)) continue; out.push([text.slice(last, m.index), u]); last = m.index + u.length; URL_RE.lastIndex = last; }
+  out.push([text.slice(last)]); return out;
+}
+const linkA = (u, label = esc(u)) => `<a href="${esc(urlHref(u))}" target="_blank" rel="noopener">${label}</a>`;
+const linkEsc = (text, fx = x => x) => urlSplit(String(text ?? '')).map(([t, u]) => fx(esc(t)) + (u ? linkA(u) : '')).join('');
+function linkNodes(root, skip) { // wrap bare URLs in text nodes (outside <a>) with links; skip = text node being typed in
+  if (!/https?:\/\/|www\./i.test(root.textContent)) return false;
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT), list = []; let n, hit = false;
+  while ((n = w.nextNode())) if (n !== skip && /https?:\/\/|www\./i.test(n.data) && !n.parentNode.closest?.('a')) list.push(n);
+  for (const t of list) {
+    const parts = urlSplit(t.data); if (parts.length < 2) continue; hit = true;
+    const f = document.createDocumentFragment();
+    for (const [txt, u] of parts) { if (txt) f.append(txt); if (u) { const a = document.createElement('a'); a.href = urlHref(u); a.target = '_blank'; a.rel = 'noopener'; a.textContent = u; f.append(a); } }
+    t.replaceWith(f);
+  }
+  return hit;
+}
+function openLink(href) { window.open(href, '_blank', 'noopener'); }
 const LS = {
   get: k => { try { return localStorage.getItem('notes.' + k); } catch { return null; } },
   set: (k, v) => { try { localStorage.setItem('notes.' + k, v); } catch {} },
@@ -576,6 +602,7 @@ const ICONS = {
   sort: '<path d="M7 4v16M3.5 16.5 7 20l3.5-3.5M17 20V4M13.5 7.5 17 4l3.5 3.5"/>',
   'chev-d': '<path d="m6 9 6 6 6-6"/>', 'chev-u': '<path d="m6 15 6-6 6 6"/>',
   x: '<path d="M6 6l12 12M18 6 6 18"/>',
+  ext: '<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/>',
   back: '<path d="M19 12H5M11 18l-6-6 6-6"/>',
   undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
   redo: '<path d="m15 14 5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/>',
@@ -866,13 +893,13 @@ function preview(n) {
   if (d.type === 'list') {
     const items = d.items || [], open = items.filter(i => !i.d), done = items.filter(i => i.d);
     const show = [...open.slice(0, 8), ...(open.length < 8 ? done.slice(0, 8 - open.length) : [])];
-    return `<div class="cl">${show.map(i => { const ix = items.indexOf(i); return `<div class="cli ${i.d ? 'dn' : ''}">${still ? `<span class="cb">${ic(i.d ? 'check' : 'box')}</span>` : `<button type="button" class="cb" data-a="ctog" data-k="${key(n)}" data-v="${ix}" aria-label="Centang">${ic(i.d ? 'check' : 'box')}</button>`}<span>${esc(i.t)}</span></div>`; }).join('')}
+    return `<div class="cl">${show.map(i => { const ix = items.indexOf(i); return `<div class="cli ${i.d ? 'dn' : ''}">${still ? `<span class="cb">${ic(i.d ? 'check' : 'box')}</span>` : `<button type="button" class="cb" data-a="ctog" data-k="${key(n)}" data-v="${ix}" aria-label="Centang">${ic(i.d ? 'check' : 'box')}</button>`}<span>${linkEsc(i.t)}</span></div>`; }).join('')}
       ${items.length > show.length ? `<div class="muted small">+${items.length - show.length} lainnya</div>` : ''}${items.length ? `<div class="cl-sum">${done.length}/${items.length} selesai</div>` : ''}</div>`;
   }
   const b = (d.body || '').trim(); if (!b && !/<img/.test(d.html || '')) return '';
   if (d.html && d.html.replace(/src="data:[^"]*"/g, '').length < 40000) return `<div class="nb rt">${cleanHtml(d.html)}</div>`;
   const cut = b.length > 420 ? b.slice(0, 420) + '…' : b;
-  return `<div class="nb">${esc(cut).replace(/(^|\s)(#[\p{L}\p{N}_-]{2,30})/gu, '$1<span class="ht">$2</span>').replace(/https?:\/\/[^\s<]+/g, u => `<a href="${u}" target="_blank" rel="noopener">${u.length > 40 ? u.slice(0, 40) + '…' : u}</a>`)}</div>`;
+  return `<div class="nb">${linkEsc(cut, t => t.replace(/(^|\s)(#[\p{L}\p{N}_-]{2,30})/gu, '$1<span class="ht">$2</span>'))}</div>`;
 }
 function card(n) {
   const d = n.data, c = catOf(n), col = COLORS[d.color] ? d.color : '';
@@ -1004,14 +1031,23 @@ function cleanHtml(html) { // whitelist sanitizer: notes of other users are show
     if (href) { c.setAttribute('href', href); c.setAttribute('target', '_blank'); c.setAttribute('rel', 'noopener'); }
     walk(c);
   } };
-  walk(t.content); const out = t.innerHTML;
+  walk(t.content); linkNodes(t.content); const out = t.innerHTML;
   if (rtCache.size > 300) rtCache.clear(); rtCache.set(html, out); return out;
 }
-const plainToHtml = t => esc(t || '').replace(/ {2}/g, ' &nbsp;').replace(/\n/g, '<br>');
+const plainToHtml = t => urlSplit(t || '').map(([x, u]) => esc(x).replace(/ {2}/g, ' &nbsp;').replace(/\n/g, '<br>') + (u ? linkA(u) : '')).join('');
 function syncRt() { // editor DOM → note data (html for display, plain body for search/#tags/PDF/.txt)
   const E = S.edit, el = $('#e-body'); if (!E || !E.rtDirty || !el) return; E.rtDirty = false;
   const body = el.innerText.replace(/ /g, ' ').replace(/\n+$/, '');
   E.d.body = body; E.d.html = body.trim() || el.querySelector('table,hr,img') ? el.innerHTML : '';
+}
+function rtAutoLink(ev) { // a URL typed in the editor turns into a link once it is finished (space, Enter, paste)
+  const it = ev.inputType || '', b = $('#e-body');
+  if (!b || !(/^(insertParagraph|insertLineBreak|insertFromPaste|insertFromDrop)$/.test(it) || (it === 'insertText' && /^\s$/.test(ev.data || '')))) return;
+  const sel = getSelection(), node = sel.rangeCount ? sel.focusNode : null;
+  // space: only the text node being typed in (cheap on huge notes); the URL ends right before the caret so it is complete
+  const root = it === 'insertText' ? (node?.nodeType === 3 ? node : null) : b; if (!root) return;
+  const pos = caretPos();
+  if (it === 'insertText' ? (node.parentNode.closest('a') ? false : (() => { const f = document.createElement('span'); f.append(node.cloneNode()); return linkNodes(f) && (node.replaceWith(...f.childNodes), true); })()) : linkNodes(b)) setCaret(pos);
 }
 function rtChanged() { if (!S.edit) return; S.edit.rtDirty = true; editChanged(); findSoon(); }
 const RT_FONTS = [['', 'Font'], ['-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif', 'Sans'], ['Georgia,Times New Roman,serif', 'Serif'], ['Menlo,Consolas,monospace', 'Mono'], ['Arial,Helvetica,sans-serif', 'Arial'], ['Times New Roman,Times,serif', 'Times'], ['Verdana,sans-serif', 'Verdana'], ['Trebuchet MS,sans-serif', 'Trebuchet'], ['Comic Sans MS,Chalkboard SE,cursive', 'Comic']];
@@ -1183,9 +1219,10 @@ function closeFind() {
   const body = $('#e-body'); if (r && body) { body.focus(); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); } // land on the last match
 }
 
+const clGo = t => { const u = urlSplit(t || '')[0][1]; return `<a class="x cl-go" href="${u ? esc(urlHref(u)) : '#'}" target="_blank" rel="noopener" title="Buka link di tab baru"${u ? '' : ' hidden'}>${ic('ext')}</a>`; };
 function clRows(ro) {
   const items = S.edit.d.items || [];
-  const row = (i, ix) => `<div class="cl-row ${i.d ? 'dn' : ''}"><input type="checkbox" data-ci="${ix}"${i.d ? ' checked' : ''}${ro ? ' disabled' : ''}><input type="text" class="cl-in" data-ct="${ix}" value="${esc(i.t)}"${ro ? ' disabled' : ''}>${ro ? '' : `<button type="button" class="x" data-a="cdel" data-v="${ix}" aria-label="Hapus">${ic('x')}</button>`}</div>`;
+  const row = (i, ix) => `<div class="cl-row ${i.d ? 'dn' : ''}"><input type="checkbox" data-ci="${ix}"${i.d ? ' checked' : ''}${ro ? ' disabled' : ''}><input type="text" class="cl-in" data-ct="${ix}" value="${esc(i.t)}"${ro ? ' disabled' : ''}>${clGo(i.t)}${ro ? '' : `<button type="button" class="x" data-a="cdel" data-v="${ix}" aria-label="Hapus">${ic('x')}</button>`}</div>`;
   const open = items.map((i, ix) => [i, ix]).filter(([i]) => !i.d), done = items.map((i, ix) => [i, ix]).filter(([i]) => i.d);
   return open.map(([i, ix]) => row(i, ix)).join('') + (ro ? '' : `<div class="cl-row add"><span>${ic('plus')}</span><input type="text" id="cl-new" placeholder="Tambah item… (Enter)"></div>`)
     + (done.length ? `<div class="muted small cl-done">${done.length} selesai</div>` + done.map(([i, ix]) => row(i, ix)).join('') : '');
@@ -1494,7 +1531,11 @@ const A = {
   export: () => download(`Notes-${S.user}-${ymd(new Date())}.json`, JSON.stringify({ app: 'Notes', user: S.user, exported: new Date().toISOString(), items: [...S.items.values()].filter(i => !i.deleted) }, null, 1), 'application/json')
 };
 document.addEventListener('click', ev => {
-  if (ev.target.closest('a[href]:not([data-a])')) return; // links inside notes
+  const lk = ev.target.closest('a[href]:not([data-a])');
+  if (lk) { // links inside notes; in the editable editor a click would only place the caret
+    if (lk.closest('[contenteditable=true]') && getSelection().isCollapsed && /^https?:/i.test(lk.href)) { ev.preventDefault(); openLink(lk.href); }
+    return;
+  }
   if (ev.target.tagName === 'IMG' && ev.target.closest('.rt')) { ev.preventDefault(); ev.stopPropagation(); zoomImg(ev.target.src); return; }
   if ($('.tbl-menu') && !ev.target.closest('.tbl-menu,[data-a=tblmenu]')) toggleTblMenu(false);
   const el = ev.target.closest('[data-a]'); if (!el || !A[el.dataset.a]) return;
@@ -1523,11 +1564,13 @@ document.addEventListener('input', ev => {
   if (t.id === 'pad-in') return padInput(t.value);
   if (t.id === 'q') { S.q = t.value; render(); return; }
   if (S.catEdit && t.dataset.cf) { S.catEdit[Number(t.dataset.v)][t.dataset.cf] = t.value; return; }
+  if (t.id === 'e-body') rtAutoLink(ev);
   if (!S.edit) return;
   if (t.id === 'e-title') { S.edit.d.title = t.value; editChanged(); }
   if (t.id === 'f-q') { S.edit.f.q = t.value; S.edit.f.i = 0; runFind(0); return; }
-  if (t.id === 'e-body') { rtChanged(); }
-  if (t.dataset.ct !== undefined) { S.edit.d.items[Number(t.dataset.ct)].t = t.value; editChanged(); findSoon(); }
+  if (t.id === 'e-body') rtChanged();
+  if (t.dataset.ct !== undefined) { S.edit.d.items[Number(t.dataset.ct)].t = t.value; editChanged(); findSoon();
+    const g = t.parentNode.querySelector('.cl-go'), u = urlSplit(t.value)[0][1]; if (g) { g.hidden = !u; g.href = u ? urlHref(u) : '#'; } }
 });
 document.addEventListener('change', ev => {
   const t = ev.target;
