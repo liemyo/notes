@@ -520,7 +520,7 @@ dialog.pdlg{width:min(340px,calc(100vw - 32px))}
 <dialog id="pdlg" class="pdlg"></dialog>
 <noscript>Notes memerlukan JavaScript.</noscript>
 <script>// Notes — catatan dengan favorit, kategori, tag, checklist, arsip & sampah. Akun (nama pengguna + PIN) sama dengan Planner; data di Supabase (proyek saku-yuk), sinkron real time.
-const BUILD = '20261031-120819';
+const BUILD = '20261103-110534';
 const SB_URL = 'https://bbptcxpzzvgpxqylkrmw.supabase.co', SB_KEY = 'sb_publishable_Ny-WHCEZ3WmcLFsPBx9QeQ_9xgo7MxR'; // public key; tables closed, only nt_*/pl_* functions
 const ADMIN = 'admin';
 
@@ -981,6 +981,16 @@ const RT_TAGS = new Set('B STRONG I EM U S STRIKE DEL SUB SUP SPAN FONT DIV P BR
 const RT_DROP = /^(SCRIPT|STYLE|IFRAME|FRAME|OBJECT|EMBED|TEMPLATE|META|LINK|TITLE|SVG|MATH|NOSCRIPT|VIDEO|AUDIO|CANVAS|FORM|INPUT|BUTTON|SELECT|TEXTAREA)$/;
 const RT_CSS = /^(color|background-color|font-family|font-size|font-weight|font-style|text-decoration-line|text-decoration|text-align|vertical-align|width)$/;
 const rtCache = new Map();
+let rtCx;
+function rtNeutral(v) { // black/white/gray (pasted defaults) → drop so text follows the light/dark theme; real colours stay
+  if (/^(inherit|initial|unset|revert|currentcolor|windowtext|canvastext|auto)$/i.test(v.trim())) return true;
+  rtCx = rtCx || document.createElement('canvas').getContext('2d');
+  rtCx.fillStyle = '#010203'; rtCx.fillStyle = v; const f = rtCx.fillStyle;
+  if (f === '#010203') return false; // unparseable → leave as is
+  const n = f[0] === '#' ? [1, 3, 5].map(i => parseInt(f.slice(i, i + 2), 16)) : (f.match(/[\d.]+/g) || []).map(Number);
+  if (n.length > 3 && n[3] === 0) return true;
+  return Math.max(n[0], n[1], n[2]) - Math.min(n[0], n[1], n[2]) < 40;
+}
 function cleanHtml(html) { // whitelist sanitizer: notes of other users are shown to admin, imports can contain anything
   if (rtCache.has(html)) return rtCache.get(html);
   const t = document.createElement('template'); t.innerHTML = html;
@@ -988,8 +998,8 @@ function cleanHtml(html) { // whitelist sanitizer: notes of other users are show
     if (!RT_TAGS.has(c.tagName)) { if (RT_DROP.test(c.tagName)) c.remove(); else { walk(c); c.replaceWith(...c.childNodes); } continue; }
     if (c.tagName === 'IMG') { const src = c.getAttribute('src') || ''; [...c.attributes].forEach(a => c.removeAttribute(a.name)); if (/^data:image\/(png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+$/.test(src)) c.setAttribute('src', src); else c.remove(); continue; }
     const href = c.tagName === 'A' && /^https?:\/\//i.test(c.getAttribute('href') || '') ? c.getAttribute('href') : null;
-    const css = []; for (const k of [...c.style]) { const v = c.style.getPropertyValue(k); if (RT_CSS.test(k) && !/url\(|expression|javascript/i.test(v)) css.push(k + ':' + v); }
-    for (const a of [...c.attributes]) { const n = a.name; if ((n === 'colspan' || n === 'rowspan') && /^\d{1,2}$/.test(a.value)) continue; if (c.tagName === 'FONT' && /^(color|face|size)$/.test(n) && !/[<>"]/.test(a.value)) continue; c.removeAttribute(n); }
+    const css = []; for (const k of [...c.style]) { const v = c.style.getPropertyValue(k); if (RT_CSS.test(k) && !/url\(|expression|javascript/i.test(v) && !(/^(color|background-color)$/.test(k) && rtNeutral(v))) css.push(k + ':' + v); }
+    for (const a of [...c.attributes]) { const n = a.name; if ((n === 'colspan' || n === 'rowspan') && /^\d{1,2}$/.test(a.value)) continue; if (c.tagName === 'FONT' && /^(color|face|size)$/.test(n) && !/[<>"]/.test(a.value) && !(n === 'color' && rtNeutral(a.value))) continue; c.removeAttribute(n); }
     if (css.length) c.setAttribute('style', css.join(';'));
     if (href) { c.setAttribute('href', href); c.setAttribute('target', '_blank'); c.setAttribute('rel', 'noopener'); }
     walk(c);
