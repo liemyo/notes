@@ -520,7 +520,7 @@ dialog.pdlg{width:min(340px,calc(100vw - 32px))}
 <dialog id="pdlg" class="pdlg"></dialog>
 <noscript>Notes memerlukan JavaScript.</noscript>
 <script>// Notes — catatan dengan favorit, kategori, tag, checklist, arsip & sampah. Akun (nama pengguna + PIN) sama dengan Planner; data di Supabase (proyek saku-yuk), sinkron real time.
-const BUILD = '20261103-110534';
+const BUILD = '20261103-124548';
 const SB_URL = 'https://bbptcxpzzvgpxqylkrmw.supabase.co', SB_KEY = 'sb_publishable_Ny-WHCEZ3WmcLFsPBx9QeQ_9xgo7MxR'; // public key; tables closed, only nt_*/pl_* functions
 const ADMIN = 'admin';
 
@@ -1083,6 +1083,45 @@ function rtTable(op) {
   if (op === 'split') { const n = cell.colSpan; if (n < 2) { toast('Sel ini tidak digabung.'); return; } cell.colSpan = 1; for (let i = 1; i < n; i++) { const c = document.createElement(cell.tagName); c.innerHTML = '<br>'; cell.after(c); } }
   rtChanged();
 }
+function tblKey(ev) { // Tab / Shift+Tab / arrow keys move between table cells like a spreadsheet
+  const b = $('#e-body'), sel = getSelection(), k = ev.key;
+  if (!b?.isContentEditable || !sel.rangeCount || ev.altKey || ev.metaKey || ev.ctrlKey || ev.isComposing) return false;
+  if (k !== 'Tab' && (ev.shiftKey || !sel.isCollapsed || !/^Arrow(Up|Down|Left|Right)$/.test(k))) return false;
+  const n = sel.focusNode, cell = (n?.nodeType === 1 ? n : n?.parentElement)?.closest('td,th'); if (!cell || !b.contains(cell)) return false;
+  const table = cell.closest('table'), cells = [...table.rows].flatMap(r => [...r.cells]), i = cells.indexOf(cell), r = sel.getRangeAt(0);
+  const empty = rg => !rg.toString() && !rg.cloneContents().querySelector?.('img');
+  const atEdge = start => { const rg = document.createRange(); rg.selectNodeContents(cell); if (start) rg.setEnd(r.startContainer, r.startOffset); else rg.setStart(r.endContainer, r.endOffset); return empty(rg); };
+  const onLine = first => { // caret on the first / last visual line of the cell
+    let c = r.getClientRects()[0];
+    if (!c) { const n = r.startContainer, o = r.startOffset, x = document.createRange(); // collapsed ranges next to <br> have no rect: measure a neighbour
+      if (n.nodeType === 3) { if (o) x.setStart(n, o - 1), x.setEnd(n, o); else x.setEnd(n, Math.min(1, n.length)); c = x.getClientRects()[0]; }
+      else { const k = n.childNodes[o] || n.childNodes[o - 1]; if (k?.nodeType === 3) { x.selectNodeContents(k); const rs = x.getClientRects(); c = rs[k === n.childNodes[o] ? 0 : rs.length - 1]; } else if (k?.nodeType === 1 && k !== cell) c = k.getBoundingClientRect(); }
+    }
+    if (!c || !c.height) return true; const cs = getComputedStyle(cell), box = cell.getBoundingClientRect();
+    return first ? c.top - (box.top + parseFloat(cs.paddingTop)) < c.height * 0.8 : (box.bottom - parseFloat(cs.paddingBottom)) - c.bottom < c.height * 0.8;
+  };
+  const colOf = c => { let x = 0; for (const o of c.parentElement.cells) { if (o === c) return x; x += o.colSpan; } return x; };
+  const inRow = (tr, x) => { let p = 0; for (const o of tr.cells) { if (x < p + o.colSpan) return o; p += o.colSpan; } return tr.cells[tr.cells.length - 1]; };
+  let to = null, end = true;
+  if (k === 'Tab') {
+    to = cells[ev.shiftKey ? i - 1 : i + 1];
+    if (!to && !ev.shiftKey) { // Tab in the last cell adds a row, like Docs/Word
+      histPush(); const tr = table.insertRow(); for (const c of cell.parentElement.cells) { const x = tr.insertCell(); x.colSpan = c.colSpan; x.innerHTML = '<br>'; } to = tr.cells[0]; rtChanged();
+    }
+    ev.preventDefault(); if (!to) return true; // Shift+Tab in the first cell: stay put instead of leaving the editor
+  } else if (k === 'ArrowLeft' || k === 'ArrowRight') {
+    const left = k === 'ArrowLeft'; if (!atEdge(left)) return false; to = cells[left ? i - 1 : i + 1]; end = left;
+  } else {
+    const up = k === 'ArrowUp', tr = table.rows[cell.parentElement.rowIndex + (up ? -1 : 1)]; if (!tr || !onLine(up)) return false; to = inRow(tr, colOf(cell));
+  }
+  if (!to) return false;
+  ev.preventDefault();
+  const tw = document.createTreeWalker(to, NodeFilter.SHOW_TEXT), txt = []; while (tw.nextNode()) if (tw.currentNode.length) txt.push(tw.currentNode);
+  const tn = end ? txt[txt.length - 1] : txt[0], rg = document.createRange(); // land inside text so the next arrow press measures the right line
+  if (tn) rg.setStart(tn, end ? tn.length : 0); else rg.setStart(to, 0); rg.collapse(true); sel.removeAllRanges(); sel.addRange(rg);
+  to.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  return true;
+}
 function imgData(file) { // shrink photos so notes stay light: max 1600px, JPEG (PNG kept for small graphics)
   return new Promise((res, rej) => {
     const url = URL.createObjectURL(file), im = new Image();
@@ -1519,6 +1558,7 @@ document.addEventListener('keydown', ev => {
   if ((ev.metaKey || ev.ctrlKey) && !ev.altKey && S.edit && dlg().open && t.id !== 'f-q' && (ev.key.toLowerCase() === 'z' || (ev.ctrlKey && ev.key.toLowerCase() === 'y'))) {
     ev.preventDefault(); histGo(ev.key.toLowerCase() === 'y' || ev.shiftKey ? 1 : -1); return;
   }
+  if (S.edit && dlg().open && t.closest?.('#e-body') && tblKey(ev)) return;
   if (t.id === 'f-q') { if (ev.key === 'Enter') { ev.preventDefault(); runFind(ev.shiftKey ? -1 : 1); } else if (ev.key === 'Escape') { ev.preventDefault(); closeFind(); } return; }
   if (ev.key === 'Enter' && t.id === 'cl-new') { ev.preventDefault(); const v = t.value.trim(); if (!v) return; histPush(); S.edit.d.items.push({ t: v, d: false }); editChanged(true); $('#cl-new')?.focus(); return; }
   if (ev.key === 'Enter' && t.dataset?.ct !== undefined) { ev.preventDefault(); $('#cl-new')?.focus(); return; }
